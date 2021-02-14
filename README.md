@@ -4,7 +4,7 @@ simpleLB
 Simple lightbox to present photos on your webpages
 
 1. Add JQuery (if you didn't do it earlier):<br>
-&lt;script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">&lt;/script&gt;
+<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'>&lt;/script&gt;
 
 2. Link JavaScript and CSS (add these two tags to head):<br>
 &lt;script src="simpleLB/lbscript.js"&gt;&lt;/script&gt;<br>
