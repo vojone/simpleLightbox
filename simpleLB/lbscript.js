@@ -1,11 +1,6 @@
 ﻿// JavaScript Document
 
-lb_page = "";
-lb_photo = "";
-lb_images = "";
-lb_image = 0;
-lb_name = "";
-lb_down_link = "";
+lb_name = ""; //label for downloaded photos ("lb_name"_"number".jpg)
 
 $(document).ready(function(){
     lb_page = document.createElement("div");
@@ -15,20 +10,24 @@ $(document).ready(function(){
     lb_photo.id = "lb_img";
     lb_page.appendChild(lb_photo);
     lb_page.addEventListener("click", lb_close);
-      
     lb_page.style.display = "none";
       
+    //Get images
     lb_images = document.getElementsByClassName("lb");
+    //Add onclick attributte
     for(i = 0; lb_images[i] != null; i++) {
         lb_images[i].setAttribute("onclick", "lb(" + i + ")");
     }
       
+    //Create close icon 
     lb_cross = document.createElement("img");
     lb_cross.src = "simpleLB/images/lb_close.png";
     lb_cross.id = "lb_cross";
+    lb_cross.title = "Close galery";
     lb_cross.addEventListener("click", backToWeb);
     lb_page.appendChild(lb_cross);
     
+    //Create icon for downloading
     lb_down_link = document.createElement("a");
     lb_down_link.title = "Download image";
     lb_page.appendChild(lb_down_link);
@@ -37,14 +36,18 @@ $(document).ready(function(){
     lb_down.id = "lb_download";
     lb_down_link.appendChild(lb_down);
     
+    //Create icon for jump to next image in galery
     lb_next = document.createElement("img");
     lb_next.src = "simpleLB/images/next.png";
+    lb_next.title = "Next image";
     lb_next.id = "lb_next";
     lb_next.addEventListener("click", lb_nextPh);
     lb_page.appendChild(lb_next);
     
+    //Create icon for jump to go back in galery
     lb_back = document.createElement("img");
     lb_back.src = "simpleLB/images/back.png";
+    lb_back.title = "Previous image";
     lb_back.id = "lb_back";
     lb_back.addEventListener("click", lb_prevPh); 
     lb_page.appendChild(lb_back);
