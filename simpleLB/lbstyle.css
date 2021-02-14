@@ -66,3 +66,7 @@ width: 30px;
 cursor: pointer;
 transition: transform 0.3s;
 }
+
+.lb {
+cursor: pointer;
+}
