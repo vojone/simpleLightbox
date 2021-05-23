@@ -9,11 +9,15 @@ Simple lightbox to present photos on your webpages
 </pre>
 
 2. Link JavaScript and CSS (add these two tags to head):<br>
-&lt;script src="simpleLB/lbscript.js"&gt;&lt;/script&gt;<br>
-&lt;link rel="stylesheet" type="text/css" href="simpleLB/lbstyle.css"&gt;
+<pre>
+    &lt;script src="simpleLB/lbscript.js"&gt;&lt;/script&gt;<br>
+    &lt;link rel="stylesheet" type="text/css" href="simpleLB/lbstyle.css"&gt;
+</pre>
 
 3. Add simpleLB folder to your website folder.
 4. If you want to present photo in lightbox add class "lb" to it, for example:<br>
-&lt;img src="image/src.jpg" class="lb"&gt;<br>
+<pre>
+    &lt;img src="image/src.jpg" class="lb"&gt;<br>
+</pre>
 
 See index.html, to see little example.
