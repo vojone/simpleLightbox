@@ -3,42 +3,32 @@
 lbName = ""; //label for downloaded photos ("lbName"_"number".jpg)
 srcImagesDir = "simpleLB/images/"; //path to source images (e.g. for buttons)
 blurFlag = true; //if true body is blurred while is lightbox used (!set bgAlpha to <> 1!)
-bgAlpha = 0.9; //bg transparency (1 is completely black, 0 is completely transparent)
+bgAlpha = 0.92; //bg transparency (1 is completely black, 0 is completely transparent)
+
+var page, photo, images, downLink, image = 0;
 
 $(document).ready(function() {
 
     //Prepare lb window in background
-    page = document.createElement("div");
-    page.id = "lb_cont";
+    page = createEl("div", "", "", "lb_cont", close);
     page.style.backgroundColor = "rgba(0, 0, 0, " + bgAlpha + ")"; 
-    document.getElementsByTagName("html")[0].appendChild(page);
-    photo = document.createElement("img");
-    photo.id = "lb_img";
-    page.appendChild(photo);
-    page.addEventListener("click", close);
-
     page.style.display = "none"; //lb is not showed when page is loaded
-      
-    //Get images
-    images = document.getElementsByClassName("lb");
-    
-    //Add onclick attributte
-    for(i = 0; images[i] != null; i++) {
-        images[i].setAttribute("onclick", "lb(" + i + ")");
-    } 
+
+    document.getElementsByTagName("html")[0].appendChild(page);
+    photo = createEl("img", "", "", "lb_img", null);
+    page.appendChild(photo);
+
+    images = getImages("lb");
+    addOnclick(images);
     
     //Downloading button
-    downLink = document.createElement("a");
-    downLink.title = "Download image";
+    downLink = createEl("a", "", "Download image", "", null);
     page.appendChild(downLink);
-
-    down = document.createElement("img");
-    down.src = "simpleLB/images/download.png";
-    down.id = "lb_download";
-    downLink.appendChild(down);
+    downImg = createEl("img", "download.png", "", "lb_download", null);
+    downLink.appendChild(downImg);
 
     //Close button 
-    crossButton = createEl("img", "lb_close.png", "Close galery", "lb_cross", backToWeb);
+    crossButton = createEl("img", "lb_close.png", "Close galery (Esc)", "lb_cross", backToWeb);
     page.appendChild(crossButton);
     
     //Next photo button
@@ -55,13 +45,74 @@ $(document).ready(function() {
     });
 });
 
+//Adds onclick attributte
+function addOnclick(elementsArr) {
+    for(i = 0; elementsArr[i] != null; i++) {
+        for(u = 0; elementsArr[i][u] != null; u++) {
+            elementsArr[i][u].setAttribute("onclick", "lb(" + i + ", " + u + ")");
+        }
+    }
+}
+
+//returns array of galeries with images
+function getImages(mainClassName) {
+    var imgs = [[]];
+
+    imagesOnPage = document.getElementsByClassName(mainClassName);
+    currentClassName = null, lastClassName = null;
+    for(i = 0, u = 0, v = 0; imagesOnPage[i] != null; i++) {
+
+        currentClassName = getFirstSubclassName(mainClassName);
+
+        if(currentClassName == lastClassName) {
+            imgs[u][v] = imagesOnPage[i];
+            v++;
+        }
+        else {
+            u++;
+            v = 0;
+            imgs[u][v] = imagesOnPage[i];
+        }
+    }
+    
+    return imgs;
+}
+
+//return first subclass name after main class name
+function getFirstSubclassName(mainClassName) {
+    wholeClassName = imagesOnPage[i].className;
+    mainClassEnd = wholeClassName.indexOf(mainClassName, 0) + mainClassName.length;
+    seriesNameEnd = wholeClassName.indexOf(" ", mainClassEnd);
+
+    if(seriesNameEnd != -1) {
+        result = wholeClassName.substring(mainClassEnd, seriesNameEnd);
+    }
+    else {
+        result = null;
+    }
+
+    return result;
+}
+
 //Returns created html element
-function createEl(type, bg, title, id, event) {
+function createEl(type, bg, title, id, clickEvent) {
     newEl = document.createElement(type);
-    newEl.src = srcImagesDir + bg;
-    newEl.id = id;
-    newEl.title = title;
-    newEl.addEventListener("click", event);
+
+    if(bg != "") {
+        newEl.src = srcImagesDir + bg;
+    }
+
+    if(id != "") {
+        newEl.id = id;
+    }
+
+    if(title != "") {
+        newEl.title = title;
+    }
+    
+    if(clickEvent != null) {
+        newEl.addEventListener("click", clickEvent);
+    }
     
     return newEl;
 }
@@ -86,17 +137,17 @@ function keyHandler(key) {
 }
 
 //Shows window with lb and initializes it with photo given in argument
-function lb(im = 0) {
+function lb(gal = 0, im = 0) {
     $("#lb_cont").fadeIn();
 
     if(blurFlag) {
-        $("body").css("filter", "blur(3px)");
+        $("body").css("filter", "blur(5px)");
     }
 
-    photo.src = images[im].src;
     image = im;
-    downLink.href =  images[im].src;
-    downLink.download = lbName + "_" + im;    
+    galery = gal;
+
+    updateLb(galery, image);    
 }
 
 //Hides window with lb
@@ -138,23 +189,26 @@ function close(click) {
 //loads next photo (when it is last photo go to start)
 function nextPh() {
     image++;
-    if (image > (images.length - 1)) {
+    if (image > (images[galery].length - 1)) {
       image = 0;
     }
     
-    photo.src = images[image].src;
-    downLink.href = images[image].src;
-    downLink.download = lbName + "_" + image;    
+    updateLb(galery, image);   
 }
 
 //loads previous photo
 function prevPh() {
     image--;
     if (image < 0) {
-      image = images.length - 1;
+      image = images[galery].length - 1;
     }
 
-    photo.src = images[image].src;
-    downLink.href =  images[image].src;
-    downLink.download = lbName + "_" + image;    
+    updateLb(galery, image);    
+}
+
+//updates photo source and download attributtes
+function updateLb(gal = 0, im = 0) {
+    photo.src = images[gal][im].src;
+    downLink.href =  images[galery][im].src;
+    downLink.download = lbName + "_" + gal + "_" + im; 
 }

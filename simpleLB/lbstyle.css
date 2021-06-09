@@ -47,20 +47,23 @@ transform: scale(1.1);
 margin: 0;
 position: absolute;
 top: 50%;
-right: 10px;
+right: 0;
+padding: 30px 10px 30px 20px;
 transform: translate(0, -50%);
 cursor: pointer;
 opacity: 0.3;
 transition: opacity 0.3s;
 }
 
+#lb_back {
+left: 0;
+padding: 30px 20px 30px 10px;
+}
+
 #lb_next:hover, #lb_back:hover {
 opacity: 1;
 }
 
-#lb_back {
-left: 10px !important;
-}
 
 .lb {
 cursor: pointer;
