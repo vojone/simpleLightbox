@@ -21,18 +21,25 @@ max-width: calc(100% + 1px);
 max-height: calc(100% + 1px);
 }
 
-#lb_cross {
+#lb_cross, #lb_download {
 display: block;
 position: absolute;
 top: 10px;
-right: 10px;
-height: 30px;
-width: 30px;
+height: 40px;
+width: 40px;
 cursor: pointer;
 transition: transform 0.3s;
 }
 
-#lb_cross:hover, #lb_donwload {
+#lb_cross {
+right: 10px;
+}
+
+#lb_download {
+right: 60px;
+}
+
+#lb_cross:hover, #lb_download:hover {
 transform: scale(1.1);
 }
 
@@ -53,17 +60,6 @@ opacity: 1;
 
 #lb_back {
 left: 10px !important;
-}
-
-#lb_download {
-display: block;
-position: absolute;
-top: 10px;
-right: 50px;
-height: 30px;
-width: 30px;
-cursor: pointer;
-transition: transform 0.3s;
 }
 
 .lb {
