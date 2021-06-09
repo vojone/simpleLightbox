@@ -1,8 +1,7 @@
 /* CSS Document */
-
 #lb_cont {
-display: block;
-background-color: black;
+display: block; 
+background-color: rgba(0, 0, 0, 1);
 position: absolute;
 left: 0;
 top: 0;
