@@ -2,7 +2,7 @@
 #lb_cont {
 display: block; 
 background-color: rgba(0, 0, 0, 1);
-position: absolute;
+position: fixed;
 left: 0;
 top: 0;
 height: 100vh;
