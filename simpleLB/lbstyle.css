@@ -1,70 +1,70 @@
 /* CSS Document */
 #lb_cont {
-display: block; 
-background-color: rgba(0, 0, 0, 1);
-position: fixed;
-left: 0;
-top: 0;
-height: 100vh;
-width: 100vw;
-z-index: 999;
-overflow: hidden;
+    display: block; 
+    background-color: rgba(0, 0, 0, 1);
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 999;
+    overflow: hidden;
 }
 
 #lb_img {
-margin: 0;
-position: absolute;
-top: 50%;
-left: calc(50% + 1px);
-transform: translate(-50%, -50%);
-max-width: calc(100% + 1px);
-max-height: calc(100% + 1px);
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: calc(50% + 1px);
+    transform: translate(-50%, -50%);
+    max-width: calc(100% + 1px);
+    max-height: calc(100% + 1px);
 }
 
 #lb_cross, #lb_download {
-display: block;
-position: absolute;
-top: 10px;
-height: 40px;
-width: 40px;
-cursor: pointer;
-transition: transform 0.3s;
+    display: block;
+    position: absolute;
+    top: 10px;
+    height: 40px;
+    width: 40px;
+    cursor: pointer;
+    transition: transform 0.3s;
 }
 
 #lb_cross {
-right: 10px;
+    right: 10px;
 }
 
 #lb_download {
-right: 60px;
+    right: 60px;
 }
 
 #lb_cross:hover, #lb_download:hover {
-transform: scale(1.1);
+    transform: scale(1.1);
 }
 
 #lb_next, #lb_back {
-margin: 0;
-position: absolute;
-top: 50%;
-right: 0;
-padding: 30px 10px 30px 20px;
-transform: translate(0, -50%);
-cursor: pointer;
-opacity: 0.3;
-transition: opacity 0.3s;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    padding: 30px 10px 30px 20px;
+    transform: translate(0, -50%);
+    cursor: pointer;
+    opacity: 0.3;
+    transition: opacity 0.3s;
 }
 
 #lb_back {
-left: 0;
-padding: 30px 20px 30px 10px;
+    left: 0;
+    padding: 30px 20px 30px 10px;
 }
 
 #lb_next:hover, #lb_back:hover {
-opacity: 1;
+    opacity: 1;
 }
 
 
 .lb {
-cursor: pointer;
+    cursor: pointer;
 }
