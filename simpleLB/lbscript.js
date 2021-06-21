@@ -1,18 +1,18 @@
-﻿const settings = {
-    //OPTION:                           //MEANING:
-    lbName : "",                        //label for downloaded photos ("lbName"_"number".jpg)
-    srcImagesDir : "simpleLB/images/",  //path to source images (e.g. for buttons)
-    blurFlag : true,                    //if true body is blurred while is lightbox used (!set bgAlpha to <> 1!)
-    bgAlpha : 0.85,                     //bg transparency (1 is completely black, 0 is completely transparent)
-}
+﻿/** ***********************************************************************************************
+ *                                            lbscript.js                    
+ *                                                                   
+ *                   Purpose: File contains implementation of Simple lightbox galery                                                        
+ *                      Note: I will be glad for improvements and fixed bugs
+ *********************************************************************************************** */
 
 $(document).ready(() => {
-    lbHtml = new LbHTMLStructure();
-    lbHtml.prepare(settings.bgAlpha);
+    lbHtml = new LbHTMLStructure(settings);
+    lbHtml.prepare();
 
-    lightbox = new Lightbox();
+    galCreator = new GaleriesCreator();
+
+    lightbox = new Lightbox(galCreator.getGals("lb"));
     lightbox.bindFrame(lbHtml);
-    lightbox.getImages("lb");
     lightbox.addOnClick();
     lightbox.bindKeys();
 });
@@ -29,7 +29,11 @@ function Galery(name, photo) {
     }
 }
 
-function LbHTMLStructure() {
+//this is prototype of object, that is responsible for creating HTML structure of lightbox and
+//changing its properties
+function LbHTMLStructure(settings) {
+    this.settings = settings;
+
     this.grandParent = null;
     this.photo = null;
     this.link = null;
@@ -38,46 +42,41 @@ function LbHTMLStructure() {
     this.prev = null;
     this.cross = null;
 
-    this.prepare = makeHtmlStruct;
-    this.update = update;
-    this.show = show;
-    this.hide = hide;
-
-    function makeHtmlStruct(bgAlpha) {
-        //Prepare lb window in background
-        this.grandParent = createEl("div", "", "", "lb_cont", close);
-        this.grandParent.style.backgroundColor = "rgba(0, 0, 0, " + bgAlpha + ")"; 
+    this.prepare = function() {
+        //prepare lb window in background
+        this.grandParent = this.createEl("div", "", "", "lb_cont");
+        this.grandParent.style.backgroundColor = "rgba(0, 0, 0, " + this.settings.bgAlpha + ")"; 
         this.grandParent.style.display = "none"; //lb is not showed when page is loaded
     
         document.getElementsByTagName("html")[0].appendChild(this.grandParent);
-        this.photo = createEl("img", "", "", "lb_img");
+        this.photo = this.createEl("img", "", "", "lb_img");
         this.grandParent.appendChild(this.photo);
         
         //downloading button
-        this.link = createEl("a", "", "Download image", "");
+        this.link = this.createEl("a", "", "Download image", "");
         this.grandParent.appendChild(this.link);
-        downImg = createEl("img", "download.png", "", "lb_download");
+        downImg = this.createEl("img", "download.png", "", "lb_download");
         this.link.appendChild(downImg);
     
         //close button 
-        this.cross = createEl("img", "lb_close.png", "Close galery (Esc)", "lb_cross");
+        this.cross = this.createEl("img", "lb_close.png", "Close galery (Esc)", "lb_cross");
         this.grandParent.appendChild(this.cross);
         
         //next photo button
-        this.next = createEl("img", "next.png", "Next image", "lb_next");
+        this.next = this.createEl("img", "next.png", "Next image", "lb_next");
         this.grandParent.appendChild(this.next);
         
         //previous photo button
-        this.prev = createEl("img", "back.png", "Previous image", "lb_back");
+        this.prev = this.createEl("img", "back.png", "Previous image", "lb_back");
         this.grandParent.appendChild(this.prev);
     }
 
     //returns created html element
-    function createEl(type, bg, title, id) {
+    this.createEl = function(type, bg, title, id) {
         var newEl = document.createElement(type);
 
         if(bg != "") {
-            newEl.src = settings.srcImagesDir + bg;
+            newEl.src = this.settings.imagesDir + bg;
         }
 
         if(id != "") {
@@ -92,125 +91,43 @@ function LbHTMLStructure() {
     }
 
     //updates photo source and download attributtes
-    function update(imageObject) {
+    this.update = function(imageObject) {
         this.photo.src = imageObject.src;
         this.link.href = imageObject.src;
         this.link.download = getFilenameFromPath(imageObject.src); 
     }
 
+    //crops path to filename with extension
+    function getFilenameFromPath(path) {
+        return path.substr(path.lastIndexOf("/") + 1);
+    }
+
     //Shows window with lb and initializes it with photo given in argument
-    function show() {
+    this.show = function() {
         $("body").css("overflow", "hidden");
         $("#" + this.grandParent.id).fadeIn();
 
-        if(settings.blurFlag) {
+        if(this.settings.blurFlag) {
             $("body").css("filter", "blur(5px)");
         }
     }
 
     //Hides window with lb
-    function hide() {
+    this.hide = function() {
         $("#" + this.grandParent.id).fadeOut(); 
         $("body").css("overflow", "auto");
 
-        if(settings.blurFlag) {
+        if(this.settings.blurFlag) {
             $("body").css("filter", "none");
         }
     }
 }
 
-//crops path to filename with extension
-function getFilenameFromPath(path) {
-    return path.substr(path.lastIndexOf("/") + 1);
-}
-
-function Lightbox() {
-    this.galeries = [];
-    this.curIm = 0;
-    this.curGal = 0;
-    this.frame = null;
-
-    this.bindFrame = bindFrame;
-    this.getImages = getLbImages;
-
-    this.next = nextIm;
-    this.prev = prevIm;
-    this.set = setIm;
-    this.showAt = showAt;
-
-    this.addOnClick = addOnClick;
-    this.keyHandler = keyHandler;
-    this.bindKeys = bindKeyboard;
-    this.lbClose = close;
-
-    this.getCurrentIm = getCurrentIm;
-
-    //returns current "position" in presentation
-    function getCurrentIm() {
-        return this.galeries[this.curGal].imgs[this.curIm];
-    }
-
-    //adds corresponding event
-    function bindKeyboard() {
-
-        $(document).keydown((keyPressed) => {
-            this.keyHandler(keyPressed); 
-        });
-    }
-
-    //binds HTML structure to lightbox object
-    function bindFrame(HTMLStruct) {
-        this.frame = HTMLStruct;
-
-        this.frame.next.addEventListener("click", () => {this.next();});
-        this.frame.prev.addEventListener("click", () => {this.prev();});
-        this.frame.cross.addEventListener("click", () => {this.frame.hide();});
-        
-        this.frame.grandParent.addEventListener("click", (target) => {this.lbClose(target);});
-    } 
-
-    //loads next photo (when it is last photo go to start)
-    function nextIm() {
-        var curGalLength = this.galeries[this.curGal].imgs.length; 
-
-        this.curIm++;
-
-        if (this.curIm > (curGalLength - 1)) {
-            this.curIm = 0;
-        }
-
-        this.frame.update(this.getCurrentIm());   
-    }
-
-    //loads previous photo
-    function prevIm() {
-        var curGalLength = this.galeries[this.curGal].imgs.length;
-
-        this.curIm--;
-
-        if (this.curIm < 0) {
-            this.curIm = curGalLength - 1;
-        }
-
-        this.frame.update(this.getCurrentIm());    
-    }
-
-    //set position in presentation to given values
-    function setIm(gal = 0, im = 0) {
-        this.curGal = gal;
-        this.curIm = im;
-
-        this.frame.update(this.getCurrentIm());
-    }
-
-    //set current photo to chosen one and then show lightbox
-    function showAt(gal = 0, im = 0) {
-        this.set(gal, im);
-        this.frame.show();
-    }
+//this object is responsible for creating array of galeries, that can be viewed in Lightbox
+function GaleriesCreator() {
 
     //returns array of galeries with images
-    function getLbImages(mainClassName) {
+    this.getGals = function(mainClassName) {
         var imgs = [];
         var currentGalery = null, imagesOnPage, selected, currentClassName, lastClassName;
 
@@ -242,9 +159,26 @@ function Lightbox() {
             imgs.push(currentGalery);
         }
         
-        this.galeries = imgs;
+        return imgs;
+    }
+
+    function getAllImages() {
+        return document.getElementsByTagName("img");
     }
     
+    //selects only images with lb classes
+    function selectLbImages(imArr, mainClassName) {
+        var result = [];
+    
+        for(let i = 0; imArr[i] != null; i++) {
+            if(imArr[i].className.indexOf(mainClassName) != -1) {
+                result.push(imArr[i]);
+            }
+        }
+    
+        return result;
+    }
+
     //return first subclass name after main class name
     function getFirstSubclassName(currentEl, mainClassName) {
         var wholeClassName, mainClassEndWithGap, subclassStart, nextGapIndex;
@@ -268,35 +202,55 @@ function Lightbox() {
     
         return result;
     }
+}
 
-    function getAllImages() {
-        return document.getElementsByTagName("img");
-    }
-    
-    //selects only images with lb classes
-    function selectLbImages(imArr, mainClassName) {
-        var result = [];
-    
-        for(let i = 0; imArr[i] != null; i++) {
-            if(imArr[i].className.indexOf(mainClassName) != -1) {
-                result.push(imArr[i]);
-            }
-        }
-    
-        return result;
+//this "main" object handles input events (such as button clicking or key pressing)
+//also holds cur. position
+function Lightbox(arrOfGaleries) {
+    this.galeries = arrOfGaleries;
+    this.curIm = 0;
+    this.curGal = 0;
+    this.frame = null;
+
+    //binds HTML structure to lightbox object
+    this.bindFrame = function(HTMLStruct) {
+        this.frame = HTMLStruct;
+
+        this.frame.next.addEventListener("click", () => {this.next();});
+        this.frame.prev.addEventListener("click", () => {this.prev();});
+        this.frame.cross.addEventListener("click", () => {this.frame.hide();});
+        
+        this.frame.grandParent.addEventListener("click", (target) => {this.lbClose(target);});
     }
 
-    //adds click event listener in proper form (with a specific arguments)
-    function addOnClick() {
-        for(let i = 0; this.galeries[i] != null; i++) {
-            for(let u = 0; this.galeries[i].imgs[u] != null; u++) {
-                eval("this.galeries[i].imgs[u].addEventListener(\"click\", () => { this.showAt( + " + i + ", " + u + "); });");
-            }
+    //loads next photo (when it is last photo go to start)
+    this.next = function() {
+        var curGalLength = this.galeries[this.curGal].imgs.length; 
+
+        this.curIm++;
+
+        if (this.curIm > (curGalLength - 1)) {
+            this.curIm = 0;
         }
+
+        this.frame.update(this.getCurrentIm());   
+    }
+
+    //loads previous photo
+    this.prev = function() {
+        var curGalLength = this.galeries[this.curGal].imgs.length;
+
+        this.curIm--;
+
+        if (this.curIm < 0) {
+            this.curIm = curGalLength - 1;
+        }
+
+        this.frame.update(this.getCurrentIm());    
     }
 
     //hides window with lb when user clicks somewhere out of photo and buttons
-    function close(click) {
+    this.lbClose = function(click) {
         var clickedEl = click.target, lbFrame = this.frame;
         
         var elements = [];
@@ -317,8 +271,46 @@ function Lightbox() {
         lbFrame.hide();
     }
 
+    //adds click event listener in proper form (with a specific arguments)
+    this.addOnClick =  function() {
+        for(let i = 0; this.galeries[i] != null; i++) {
+            for(let u = 0; this.galeries[i].imgs[u] != null; u++) {
+                eval("this.galeries[i].imgs[u].addEventListener(\"click\", () => { \
+                        this.showAt( + " + i + ", " + u + "); \
+                    });");
+            }
+        }
+    }
+
+    //set current photo to chosen one and then show lightbox
+    this.showAt = function(gal = 0, im = 0) {
+        this.set(gal, im);
+        this.frame.show();
+    }
+
+    //set position in presentation to given values
+    this.set = function(gal = 0, im = 0) {
+        this.curGal = gal;
+        this.curIm = im;
+
+        this.frame.update(this.getCurrentIm());
+    }
+
+    //returns current "position" in presentation
+    this.getCurrentIm = function() {
+        return this.galeries[this.curGal].imgs[this.curIm];
+    }
+
+    //adds corresponding event
+    this.bindKeys = function() {
+
+        $(document).keydown((keyPressed) => {
+            this.keyHandler(keyPressed); 
+        });
+    }
+
     //solves pressed key
-    function keyHandler(key) {
+    this.keyHandler = function(key) {
         pageState = this.frame.grandParent.style.display;
 
         if(pageState != "none") {
@@ -337,5 +329,5 @@ function Lightbox() {
     }
 }
 
-//End of lbscript.js
+/***                                       End of lbscript.js                                  ***/
 
