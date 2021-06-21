@@ -1,19 +1,24 @@
-﻿// JavaScript Document
-
-lbName = ""; //label for downloaded photos ("lbName"_"number".jpg)
-srcImagesDir = "simpleLB/images/"; //path to source images (e.g. for buttons)
-blurFlag = true; //if true body is blurred while is lightbox used (!set bgAlpha to <> 1!)
-bgAlpha = 0.85; //bg transparency (1 is completely black, 0 is completely transparent)
+﻿const settings = {
+    //OPTION:                           //MEANING:
+    lbName : "",                        //label for downloaded photos ("lbName"_"number".jpg)
+    srcImagesDir : "simpleLB/images/",  //path to source images (e.g. for buttons)
+    blurFlag : true,                    //if true body is blurred while is lightbox used (!set bgAlpha to <> 1!)
+    bgAlpha : 0.85,                     //bg transparency (1 is completely black, 0 is completely transparent)
+}
 
 $(document).ready(() => {
+    lbHtml = new LbHTMLStructure();
+    lbHtml.prepare(settings.bgAlpha);
+
     lightbox = new Lightbox();
-    lightbox.create(bgAlpha);
+    lightbox.bindFrame(lbHtml);
     lightbox.getImages("lb");
     lightbox.addOnClick();
-    bindKeyboard();
+    lightbox.bindKeys();
 });
 
-//Object prototype for galeries
+
+//object prototype for galeries
 function Galery(name, photo) {
     this.imgs = [photo];
     this.name = name;
@@ -24,137 +29,55 @@ function Galery(name, photo) {
     }
 }
 
-//updates photo source and download attributtes
-function update() {
-    lightbox.photo.src = lightbox.galeries[lightbox.curGal].imgs[lightbox.curIm].src;
-    lightbox.link.href =  lightbox.galeries[lightbox.curGal].imgs[lightbox.curIm].src;
-    lightbox.link.download = lbName + "_" + lightbox.curGal + "_" + lightbox.curIm; 
-}
+function LbHTMLStructure() {
+    this.grandParent = null;
+    this.photo = null;
+    this.link = null;
 
-//Shows window with lb and initializes it with photo given in argument
-function show(gal = 0, im = 0) {
-    $("#lb_cont").fadeIn();
-    document.body.style.overflow = 'hidden';
+    this.next = null;
+    this.prev = null;
+    this.cross = null;
 
-    if(blurFlag) {
-        $("body").css("filter", "blur(5px)");
-    }
+    this.prepare = makeHtmlStruct;
+    this.update = update;
+    this.show = show;
+    this.hide = hide;
 
-    lightbox.curIm = im;
-    lightbox.curGal = gal;
-
-    update();
-}
-
-//loads next photo (when it is last photo go to start)
-function nextPh() {
-    var curGalLength = lightbox.galeries[lightbox.curGal].imgs.length; 
-
-    lightbox.curIm++;
-
-    if (lightbox.curIm > (curGalLength - 1)) {
-        lightbox.curIm = 0;
-    }
-
-    update(lightbox.curGal, lightbox.curIm);   
-}
-
-//loads previous photo
-function prevPh() {
-    var curGalLength = lightbox.galeries[lightbox.curGal].imgs.length;
-
-    lightbox.curIm--;
-
-    if (lightbox.curIm < 0) {
-        lightbox.curIm = curGalLength - 1;
-    }
-
-    update(lightbox.curGal, lightbox.curIm);    
-}
-
-//Hides window with lb
-function backToWeb() {
-    document.body.style.overflow = 'auto';
-    $("#lb_cont").fadeOut(); 
-
-    if(blurFlag) {
-        $("body").css("filter", "none");
-    }
-}
-
-//Hides window with lb when user clicks somewhere out of photo and buttons
-function close(click) {
-    var x = document.getElementById("lb_img"); 
-    var el = click.target;
-    
-    elements = [];
-    while(el !== null) {
-        elements.push(el);
-        el = el.parentElement;
-    }
-    
-    exceptions = [x, 
-                document.getElementById("lb_next"),
-                document.getElementById("lb_back"),
-                document.getElementById("lb_download")];
-
-    //react on everything except of buttons
-    for(let i = 0; exceptions[i] != null; i++) {
-        if(elements.includes(exceptions[i])) {
-            return;
-        }
-    }
-
-    backToWeb();
-}
-
-function Lightbox() {
-    this.parent;
-    this.photo;
-    this.link;
-
-    this.galeries = [];
-    this.curIm = 0;
-    this.curGal = 0;
-    this.create = createLb;
-    this.getImages = getLbImages;
-    this.addOnClick = addOnClick;
-
-    function createLb(bgAlpha) {
+    function makeHtmlStruct(bgAlpha) {
         //Prepare lb window in background
-        this.parent = createEl("div", "", "", "lb_cont", close);
-        this.parent.style.backgroundColor = "rgba(0, 0, 0, " + bgAlpha + ")"; 
-        this.parent.style.display = "none"; //lb is not showed when page is loaded
+        this.grandParent = createEl("div", "", "", "lb_cont", close);
+        this.grandParent.style.backgroundColor = "rgba(0, 0, 0, " + bgAlpha + ")"; 
+        this.grandParent.style.display = "none"; //lb is not showed when page is loaded
     
-        document.getElementsByTagName("html")[0].appendChild(this.parent);
-        this.photo = createEl("img", "", "", "lb_img", null);
-        this.parent.appendChild(this.photo);
+        document.getElementsByTagName("html")[0].appendChild(this.grandParent);
+        this.photo = createEl("img", "", "", "lb_img");
+        this.grandParent.appendChild(this.photo);
         
-        //Downloading button
-        this.link = createEl("a", "", "Download image", "", null);
-        this.parent.appendChild(this.link);
-        downImg = createEl("img", "download.png", "", "lb_download", null);
+        //downloading button
+        this.link = createEl("a", "", "Download image", "");
+        this.grandParent.appendChild(this.link);
+        downImg = createEl("img", "download.png", "", "lb_download");
         this.link.appendChild(downImg);
     
-        //Close button 
-        crossButton = createEl("img", "lb_close.png", "Close galery (Esc)", "lb_cross", backToWeb);
-        this.parent.appendChild(crossButton);
+        //close button 
+        this.cross = createEl("img", "lb_close.png", "Close galery (Esc)", "lb_cross");
+        this.grandParent.appendChild(this.cross);
         
-        //Next photo button
-        nextButton = createEl("img", "next.png", "Next image", "lb_next", nextPh);
-        this.parent.appendChild(nextButton);
+        //next photo button
+        this.next = createEl("img", "next.png", "Next image", "lb_next");
+        this.grandParent.appendChild(this.next);
         
-        //Previous photo button
-        backButton = createEl("img", "back.png", "Previous image", "lb_back", prevPh);
-        this.parent.appendChild(backButton);
+        //previous photo button
+        this.prev = createEl("img", "back.png", "Previous image", "lb_back");
+        this.grandParent.appendChild(this.prev);
     }
 
-    //Returns created html element
-    function createEl(type, bg, title, id, clickEvent) {
+    //returns created html element
+    function createEl(type, bg, title, id) {
         var newEl = document.createElement(type);
 
         if(bg != "") {
-            newEl.src = srcImagesDir + bg;
+            newEl.src = settings.srcImagesDir + bg;
         }
 
         if(id != "") {
@@ -165,11 +88,125 @@ function Lightbox() {
             newEl.title = title;
         }
         
-        if(clickEvent != null) {
-            newEl.addEventListener("click", clickEvent);
-        }
-        
         return newEl;
+    }
+
+    //updates photo source and download attributtes
+    function update(imageObject) {
+        this.photo.src = imageObject.src;
+        this.link.href = imageObject.src;
+        this.link.download = getFilenameFromPath(imageObject.src); 
+    }
+
+    //Shows window with lb and initializes it with photo given in argument
+    function show() {
+        $("body").css("overflow", "hidden");
+        $("#" + this.grandParent.id).fadeIn();
+
+        if(settings.blurFlag) {
+            $("body").css("filter", "blur(5px)");
+        }
+    }
+
+    //Hides window with lb
+    function hide() {
+        $("#" + this.grandParent.id).fadeOut(); 
+        $("body").css("overflow", "auto");
+
+        if(settings.blurFlag) {
+            $("body").css("filter", "none");
+        }
+    }
+}
+
+//crops path to filename with extension
+function getFilenameFromPath(path) {
+    return path.substr(path.lastIndexOf("/") + 1);
+}
+
+function Lightbox() {
+    this.galeries = [];
+    this.curIm = 0;
+    this.curGal = 0;
+    this.frame = null;
+
+    this.bindFrame = bindFrame;
+    this.getImages = getLbImages;
+
+    this.next = nextIm;
+    this.prev = prevIm;
+    this.set = setIm;
+    this.showAt = showAt;
+
+    this.addOnClick = addOnClick;
+    this.keyHandler = keyHandler;
+    this.bindKeys = bindKeyboard;
+    this.lbClose = close;
+
+    this.getCurrentIm = getCurrentIm;
+
+    //returns current "position" in presentation
+    function getCurrentIm() {
+        return this.galeries[this.curGal].imgs[this.curIm];
+    }
+
+    //adds corresponding event
+    function bindKeyboard() {
+
+        $(document).keydown((keyPressed) => {
+            this.keyHandler(keyPressed); 
+        });
+    }
+
+    //binds HTML structure to lightbox object
+    function bindFrame(HTMLStruct) {
+        this.frame = HTMLStruct;
+
+        this.frame.next.addEventListener("click", () => {this.next();});
+        this.frame.prev.addEventListener("click", () => {this.prev();});
+        this.frame.cross.addEventListener("click", () => {this.frame.hide();});
+        
+        this.frame.grandParent.addEventListener("click", (target) => {this.lbClose(target);});
+    } 
+
+    //loads next photo (when it is last photo go to start)
+    function nextIm() {
+        var curGalLength = this.galeries[this.curGal].imgs.length; 
+
+        this.curIm++;
+
+        if (this.curIm > (curGalLength - 1)) {
+            this.curIm = 0;
+        }
+
+        this.frame.update(this.getCurrentIm());   
+    }
+
+    //loads previous photo
+    function prevIm() {
+        var curGalLength = this.galeries[this.curGal].imgs.length;
+
+        this.curIm--;
+
+        if (this.curIm < 0) {
+            this.curIm = curGalLength - 1;
+        }
+
+        this.frame.update(this.getCurrentIm());    
+    }
+
+    //set position in presentation to given values
+    function setIm(gal = 0, im = 0) {
+        this.curGal = gal;
+        this.curIm = im;
+
+        this.frame.update(this.getCurrentIm());
+    }
+
+    //set current photo to chosen one and then show lightbox
+    function showAt(gal = 0, im = 0) {
+        this.set(gal, im);
+        this.frame.show();
     }
 
     //returns array of galeries with images
@@ -178,7 +215,8 @@ function Lightbox() {
         var currentGalery = null, imagesOnPage, selected, currentClassName, lastClassName;
 
         imagesOnPage = getAllImages();
-        selected = selectLbImages(imagesOnPage, mainClassName); //select only images with lb class
+        //select only images with lb class
+        selected = selectLbImages(imagesOnPage, mainClassName);
 
         currentClassName = null, lastClassName = null;
         for(let i = 0; selected[i] != null; i++) {
@@ -186,10 +224,12 @@ function Lightbox() {
             currentClassName = getFirstSubclassName(selected[i], mainClassName);
             if(i == 0 || currentClassName != lastClassName) {
                 if(i != 0) {
-                    imgs.push(currentGalery); //if galery is changing push it into result array
+                    //if galery is changing push it into result array
+                    imgs.push(currentGalery);
                 }
 
-                currentGalery = new Galery(currentClassName, selected[i]); //change galery, if name is changing
+                //change galery, if name is changing
+                currentGalery = new Galery(currentClassName, selected[i]);
             }
             else {
                 currentGalery.addImg(selected[i]);
@@ -207,8 +247,9 @@ function Lightbox() {
     
     //return first subclass name after main class name
     function getFirstSubclassName(currentEl, mainClassName) {
-        var wholeClassName, mainClassEndWithGap, subclassStart, nextGapIndex, result;
-    
+        var wholeClassName, mainClassEndWithGap, subclassStart, nextGapIndex;
+        var result = null;
+
         wholeClassName = currentEl.className;
         mainClassEndWithGap = wholeClassName.indexOf(mainClassName + " ", 0);
     
@@ -223,9 +264,6 @@ function Lightbox() {
                 result = wholeClassName.substring(subclassStart, wholeClassName.length);
             }
             
-        }
-        else {
-            result = null;
         }
     
         return result;
@@ -248,39 +286,56 @@ function Lightbox() {
         return result;
     }
 
-    //Adds onclick attributte
+    //adds click event listener in proper form (with a specific arguments)
     function addOnClick() {
         for(let i = 0; this.galeries[i] != null; i++) {
             for(let u = 0; this.galeries[i].imgs[u] != null; u++) {
-                this.galeries[i].imgs[u].setAttribute("onclick", "show(" + i + ", " + u + ")");
+                eval("this.galeries[i].imgs[u].addEventListener(\"click\", () => { this.showAt( + " + i + ", " + u + "); });");
+            }
+        }
+    }
+
+    //hides window with lb when user clicks somewhere out of photo and buttons
+    function close(click) {
+        var clickedEl = click.target, lbFrame = this.frame;
+        
+        var elements = [];
+        while(clickedEl !== null) {
+            elements.push(clickedEl);
+            clickedEl = clickedEl.parentElement;
+        }
+        
+        var exceptions = [lbFrame.photo, lbFrame.next, lbFrame.prev, lbFrame.link];
+
+        //react on everything except of buttons
+        for(let i = 0; exceptions[i] != null; i++) {
+            if(elements.includes(exceptions[i])) {
+                return;
+            }
+        }
+
+        lbFrame.hide();
+    }
+
+    //solves pressed key
+    function keyHandler(key) {
+        pageState = this.frame.grandParent.style.display;
+
+        if(pageState != "none") {
+            switch(key.code || key.which) {
+                case "ArrowLeft":
+                    this.prev();
+                    break;
+                case "ArrowRight":
+                    this.next();
+                    break;
+                case "Escape":
+                    this.frame.hide();
+                    break;
             }
         }
     }
 }
 
-//adds corresponding event
-function bindKeyboard() {
-    $(document).keydown(function(keyPressed) {
-        keyHandler(keyPressed);
-    });
-}
-
-//Solves pressed key
-function keyHandler(key) {
-    pageState = lightbox.parent.style.display;
-
-    if(pageState != "none") {
-        switch(key.code || key.which) {
-            case "ArrowLeft":
-                prevPh();
-                break;
-            case "ArrowRight":
-                nextPh();
-                break;
-            case "Escape":
-                backToWeb();
-                break;
-        }
-    }
-}
+//End of lbscript.js
 
