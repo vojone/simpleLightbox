@@ -103,7 +103,7 @@ function LbHTMLStructure(settings) {
     }
 
     //Shows window with lb and initializes it with photo given in argument
-    this.show = function() {
+    this.showFrame = function() {
         $("body").css("overflow", "hidden");
         $("#" + this.grandParent.id).fadeIn();
 
@@ -113,7 +113,7 @@ function LbHTMLStructure(settings) {
     }
 
     //Hides window with lb
-    this.hide = function() {
+    this.hideFrame = function() {
         $("#" + this.grandParent.id).fadeOut(); 
         $("body").css("overflow", "auto");
 
@@ -121,6 +121,22 @@ function LbHTMLStructure(settings) {
             $("body").css("filter", "none");
         }
     }
+
+    this.setArrowsVisibility = function(prevIsVisible = true, nextIsVisible = true) {
+        if(prevIsVisible) {
+            $("#" + this.prev.id).show();
+        }
+        else {
+            $("#" + this.prev.id).hide();
+        }
+
+        if(nextIsVisible) {
+            $("#" + this.next.id).show();
+        }
+        else {
+            $("#" + this.next.id).hide();
+        }
+    } 
 }
 
 //this object is responsible for creating array of galeries, that can be viewed in Lightbox
@@ -218,12 +234,12 @@ function Lightbox(arrOfGaleries) {
 
         this.frame.next.addEventListener("click", () => {this.next();});
         this.frame.prev.addEventListener("click", () => {this.prev();});
-        this.frame.cross.addEventListener("click", () => {this.frame.hide();});
+        this.frame.cross.addEventListener("click", () => {this.frame.hideFrame();});
         
         this.frame.grandParent.addEventListener("click", (target) => {this.lbClose(target);});
     }
 
-    //loads next photo (when it is last photo go to start)
+    //loads next photo in current galery (when it is last photo go to start)
     this.next = function() {
         var curGalLength = this.galeries[this.curGal].imgs.length; 
 
@@ -236,7 +252,7 @@ function Lightbox(arrOfGaleries) {
         this.frame.update(this.getCurrentIm());   
     }
 
-    //loads previous photo
+    //loads previous photo in current galery
     this.prev = function() {
         var curGalLength = this.galeries[this.curGal].imgs.length;
 
@@ -268,7 +284,7 @@ function Lightbox(arrOfGaleries) {
             }
         }
 
-        lbFrame.hide();
+        lbFrame.hideFrame();
     }
 
     //adds click event listener in proper form (with a specific arguments)
@@ -282,10 +298,18 @@ function Lightbox(arrOfGaleries) {
         }
     }
 
-    //set current photo to chosen one and then show lightbox
+    //set current photo to chosen one (can be in any galery) and then show lightbox
     this.showAt = function(gal = 0, im = 0) {
         this.set(gal, im);
-        this.frame.show();
+
+        if(this.galeries[this.curGal].imgs.length > 1) {
+            this.frame.setArrowsVisibility(true, true);
+        }
+        else {
+            this.frame.setArrowsVisibility(false, false);
+        }
+
+        this.frame.showFrame();
     }
 
     //set position in presentation to given values
@@ -322,12 +346,12 @@ function Lightbox(arrOfGaleries) {
                     this.next();
                     break;
                 case "Escape":
-                    this.frame.hide();
+                    this.frame.hideFrame();
                     break;
             }
         }
     }
 }
 
-/***                                       End of lbscript.js                                  ***/
+/***                                     End of lbscript.js                                    ***/
 
