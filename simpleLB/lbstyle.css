@@ -11,7 +11,7 @@
     overflow: hidden;
 }
 
-#lb_img {
+#lb_cont #lb_img {
     margin: 0;
     position: absolute;
     top: 50%;
@@ -21,7 +21,7 @@
     max-height: calc(100% + 1px);
 }
 
-#lb_cross, #lb_download {
+#lb_cont #lb_cross, #lb_download {
     display: block;
     position: absolute;
     top: 10px;
@@ -31,19 +31,19 @@
     transition: transform 0.3s;
 }
 
-#lb_cross {
+#lb_cont #lb_cross {
     right: 10px;
 }
 
-#lb_download {
+#lb_cont #lb_download {
     right: 60px;
 }
 
-#lb_cross:hover, #lb_download:hover {
+#lb_cont #lb_cross:hover, #lb_download:hover {
     transform: scale(1.1);
 }
 
-#lb_next, #lb_back {
+#lb_cont #lb_next, #lb_back {
     margin: 0;
     position: absolute;
     top: 50%;
@@ -55,15 +55,32 @@
     transition: opacity 0.3s;
 }
 
-#lb_back {
+#lb_cont #lb_back {
     left: 0;
     padding: 30px 20px 30px 10px;
 }
 
-#lb_next:hover, #lb_back:hover {
+#lb_cont #lb_next:hover, #lb_back:hover {
     opacity: 1;
 }
 
+#lb_cont #lb_info {
+    position: absolute;
+    margin: 0;
+    padding: 10px 10px 10px 10px;
+    bottom: 0;
+    left: 0;
+    font-family: Verdana;
+}
+
+#lb_cont #lb_info #lb_numbering {
+    color: white;
+}
+
+#lb_cont #lb_info #lb_caption {
+    color: white;
+    margin-bottom: 5px;
+}
 
 .lb {
     cursor: pointer;

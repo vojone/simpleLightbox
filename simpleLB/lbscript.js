@@ -42,6 +42,9 @@ function LbHTMLStructure(settings) {
     this.prev = null;
     this.cross = null;
 
+    this.caption = null;
+    this.number = null;
+
     this.prepare = function() {
         //prepare lb window in background
         this.grandParent = this.createEl("div", "", "", "lb_cont");
@@ -52,6 +55,14 @@ function LbHTMLStructure(settings) {
         this.photo = this.createEl("img", "", "", "lb_img");
         this.grandParent.appendChild(this.photo);
         
+        //next photo button
+        this.next = this.createEl("img", "next.png", "Next image", "lb_next");
+        this.grandParent.appendChild(this.next);
+        
+        //previous photo button
+        this.prev = this.createEl("img", "back.png", "Previous image", "lb_back");
+        this.grandParent.appendChild(this.prev);
+
         //downloading button
         this.link = this.createEl("a", "", "Download image", "");
         this.grandParent.appendChild(this.link);
@@ -61,14 +72,15 @@ function LbHTMLStructure(settings) {
         //close button 
         this.cross = this.createEl("img", "lb_close.png", "Close galery (Esc)", "lb_cross");
         this.grandParent.appendChild(this.cross);
-        
-        //next photo button
-        this.next = this.createEl("img", "next.png", "Next image", "lb_next");
-        this.grandParent.appendChild(this.next);
-        
-        //previous photo button
-        this.prev = this.createEl("img", "back.png", "Previous image", "lb_back");
-        this.grandParent.appendChild(this.prev);
+
+        var info = this.createEl("div", "", "", "lb_info");
+        this.grandParent.appendChild(info); 
+
+        this.caption = this.createEl("div", "", "", "lb_caption");
+        info.appendChild(this.caption);
+
+        this.number = this.createEl("div", "", "Current/Total", "lb_numbering");
+        info.appendChild(this.number);
     }
 
     //returns created html element
@@ -90,11 +102,43 @@ function LbHTMLStructure(settings) {
         return newEl;
     }
 
-    //updates photo source and download attributtes
-    this.update = function(imageObject) {
+    this.update = function(imageObject, curImIndex, totalImNumber) {
+        this.updateImage(imageObject);
+        this.updateCaption(imageObject);
+        this.updateNumber(curImIndex, totalImNumber);
+    }
+
+    //updates photo source and download attributtes (and caption or numbering if they are enabled)
+    this.updateImage = function(imageObject) {
         this.photo.src = imageObject.src;
         this.link.href = imageObject.src;
         this.link.download = getFilenameFromPath(imageObject.src); 
+    }
+
+    this.updateCaption = function(imageObject) {
+        if(this.caption !== null) {
+            var captionContent = imageObject.getAttribute("data-caption");
+
+            if(captionContent !== null) {
+                this.caption.innerHTML = captionContent;
+            }
+            else {
+                this.caption.innerHTML = "";
+            }
+        }
+    }
+
+    this.updateNumber = function(curImIndex, totalImNumber) {
+        if(this.number !== null) {
+            if(totalImNumber > 1) {
+                var orderNumOfIm = curImIndex + 1;
+
+                this.number.innerHTML = orderNumOfIm + "/" + totalImNumber;
+            }
+            else {
+                this.number.innerHTML = "";
+            }
+        }
     }
 
     //crops path to filename with extension
@@ -147,7 +191,7 @@ function GaleriesCreator() {
         var imgs = [];
         var currentGalery = null, imagesOnPage, selected, currentClassName, lastClassName;
 
-        imagesOnPage = getAllImages();
+        imagesOnPage = getAllImages(mainClassName);
         //select only images with lb class
         selected = selectLbImages(imagesOnPage, mainClassName);
 
@@ -178,8 +222,8 @@ function GaleriesCreator() {
         return imgs;
     }
 
-    function getAllImages() {
-        return document.getElementsByTagName("img");
+    function getAllImages(mainClassName) {
+        return document.getElementsByClassName(mainClassName);
     }
     
     //selects only images with lb classes
@@ -249,7 +293,7 @@ function Lightbox(arrOfGaleries) {
             this.curIm = 0;
         }
 
-        this.frame.update(this.getCurrentIm());   
+        this.frame.update(this.getCurrentIm(), this.curIm, this.galeries[this.curGal].imgs.length);   
     }
 
     //loads previous photo in current galery
@@ -262,7 +306,7 @@ function Lightbox(arrOfGaleries) {
             this.curIm = curGalLength - 1;
         }
 
-        this.frame.update(this.getCurrentIm());    
+        this.frame.update(this.getCurrentIm(), this.curIm, this.galeries[this.curGal].imgs.length);    
     }
 
     //hides window with lb when user clicks somewhere out of photo and buttons
@@ -317,7 +361,7 @@ function Lightbox(arrOfGaleries) {
         this.curGal = gal;
         this.curIm = im;
 
-        this.frame.update(this.getCurrentIm());
+        this.frame.update(this.getCurrentIm(), this.curIm, this.galeries[this.curGal].imgs.length);
     }
 
     //returns current "position" in presentation
