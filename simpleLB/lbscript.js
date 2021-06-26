@@ -70,7 +70,7 @@ function LbHTMLStructure(settings) {
         this.link.appendChild(downImg);
     
         //close button 
-        this.cross = this.createEl("img", "lb_close.png", "Close galery (Esc)", "lb_cross");
+        this.cross = this.createEl("img", "close.png", "Close galery (Esc)", "lb_cross");
         this.grandParent.appendChild(this.cross);
 
         var info = this.createEl("div", "", "", "lb_info");

@@ -1,4 +1,3 @@
-/* CSS Document */
 #lb_cont {
     display: block; 
     background-color: rgba(0, 0, 0, 1);
@@ -71,6 +70,7 @@
     bottom: 0;
     left: 0;
     font-family: Verdana;
+    font-size: 0.9em;
 }
 
 #lb_cont #lb_info #lb_numbering {
