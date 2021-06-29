@@ -233,11 +233,12 @@ function GaleriesCreator() {
     function getAllImages(mainClassName) {
         return document.getElementsByClassName(mainClassName);
     }
+
     
     //selects only images with lb classes
     function selectLbImages(imArr, mainClassName) {
         var result = [];
-    
+
         for(let i = 0; imArr[i] != null; i++) {
             if(imArr[i].className.indexOf(mainClassName) != -1) {
                 result.push(imArr[i]);
@@ -370,6 +371,44 @@ function Lightbox(arrOfGaleries) {
         this.curIm = im;
 
         this.frame.update(this.getCurrentIm(), this.curIm, this.galeries[this.curGal].imgs.length);
+    }
+
+    //returns current "position" in presentation
+    this.getCurrentIm = function() {
+        return this.galeries[this.curGal].imgs[this.curIm];
+    }
+
+    //adds corresponding event
+    this.bindKeys = function() {
+
+        $(document).keydown((keyPressed) => {
+            this.keyHandler(keyPressed); 
+        });
+    }
+
+    //adds click event listener in proper form (with a specific arguments)
+    this.addOnClick =  function() {
+        for(let i = 0; this.galeries[i] != null; i++) {
+            for(let u = 0; this.galeries[i].imgs[u] != null; u++) {
+                eval("this.galeries[i].imgs[u].addEventListener(\"click\", () => { \
+                    this.showAt( + " + i + ", " + u + "); \
+                    });");
+            }
+        }
+    }
+
+    //set current photo to chosen one and then show lightbox
+    this.showAt = function(gal = 0, im = 0) {
+        this.set(gal, im);
+        this.frame.showFrame();
+    }
+
+    //set position in presentation to given values
+    this.set = function(gal = 0, im = 0) {
+        this.curGal = gal;
+        this.curIm = im;
+
+        this.frame.update(this.getCurrentIm());
     }
 
     //returns current "position" in presentation
