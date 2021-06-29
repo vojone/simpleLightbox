@@ -10,7 +10,7 @@
     overflow: hidden;
 }
 
-#lb_cont #lb_img {
+#lb_cont #main_img {
     margin: 0;
     position: absolute;
     top: 50%;
@@ -20,65 +20,63 @@
     max-height: calc(100% + 1px);
 }
 
-#lb_cont #lb_cross, #lb_download {
+#lb_cont #cross, #download {
     display: block;
-    position: absolute;
-    top: 10px;
-    height: 40px;
-    width: 40px;
+    position: relative;
+    float: right;
+    margin: 10px 10px 0 0;
+
+    max-width: 60px;
+    min-width: 30px;
+    width: calc(30px + 0.75vw);
+
     cursor: pointer;
-    transition: transform 0.3s;
+    opacity: 0.3;
+    transition: opacity 0.3s;
 }
 
-#lb_cont #lb_cross {
-    right: 10px;
+#lb_cont #cross:hover, #download:hover {
+    opacity: 1;
 }
 
-#lb_cont #lb_download {
-    right: 60px;
-}
-
-#lb_cont #lb_cross:hover, #lb_download:hover {
-    transform: scale(1.1);
-}
-
-#lb_cont #lb_next, #lb_back {
+#lb_cont #next, #prev {
     margin: 0;
     position: absolute;
     top: 50%;
     right: 0;
     padding: 30px 10px 30px 20px;
+
+    max-height: 70px;
+    min-height: 50px;
+    height: calc(50px + 0.75vw);
+
     transform: translate(0, -50%);
     cursor: pointer;
     opacity: 0.3;
     transition: opacity 0.3s;
 }
 
-#lb_cont #lb_back {
+#lb_cont #prev {
     left: 0;
     padding: 30px 20px 30px 10px;
 }
 
-#lb_cont #lb_next:hover, #lb_back:hover {
+#lb_cont #next:hover, #prev:hover {
     opacity: 1;
 }
 
-#lb_cont #lb_info {
+#lb_cont #info {
     position: absolute;
     margin: 0;
     padding: 10px 10px 10px 10px;
     bottom: 0;
     left: 0;
     font-family: Verdana;
-    font-size: 0.9em;
-}
-
-#lb_cont #lb_info #lb_numbering {
+    font-size: 0.8em;
     color: white;
 }
 
-#lb_cont #lb_info #lb_caption {
-    color: white;
+#lb_cont #info #caption {
     margin-bottom: 5px;
 }
 

@@ -52,34 +52,35 @@ function LbHTMLStructure(settings) {
         this.grandParent.style.display = "none"; //lb is not showed when page is loaded
     
         document.getElementsByTagName("html")[0].appendChild(this.grandParent);
-        this.photo = this.createEl("img", "", "", "lb_img");
+        this.photo = this.createEl("img", "", "", "main_img");
         this.grandParent.appendChild(this.photo);
         
         //next photo button
-        this.next = this.createEl("img", "next.png", "Next image", "lb_next");
+        this.next = this.createEl("img", "next.png", "Next image", "next");
         this.grandParent.appendChild(this.next);
         
         //previous photo button
-        this.prev = this.createEl("img", "back.png", "Previous image", "lb_back");
+        this.prev = this.createEl("img", "back.png", "Previous image", "prev");
         this.grandParent.appendChild(this.prev);
+
+
+        //close button 
+        this.cross = this.createEl("img", "close.png", "Close galery (Esc)", "cross");
+        this.grandParent.appendChild(this.cross);
 
         //downloading button
         this.link = this.createEl("a", "", "Download image", "");
         this.grandParent.appendChild(this.link);
-        downImg = this.createEl("img", "download.png", "", "lb_download");
+        downImg = this.createEl("img", "download.png", "", "download");
         this.link.appendChild(downImg);
-    
-        //close button 
-        this.cross = this.createEl("img", "close.png", "Close galery (Esc)", "lb_cross");
-        this.grandParent.appendChild(this.cross);
 
-        var info = this.createEl("div", "", "", "lb_info");
+        var info = this.createEl("div", "", "", "info");
         this.grandParent.appendChild(info); 
 
-        this.caption = this.createEl("div", "", "", "lb_caption");
+        this.caption = this.createEl("div", "", "", "caption");
         info.appendChild(this.caption);
 
-        this.number = this.createEl("div", "", "Current/Total", "lb_numbering");
+        this.number = this.createEl("div", "", "Current/Total", "numbering");
         info.appendChild(this.number);
     }
 
