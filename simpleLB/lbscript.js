@@ -182,6 +182,13 @@ function LbHTMLStructure(settings) {
             $("#" + this.next.id).hide();
         }
     } 
+
+    this.lightenButton = function(buttonObj) {
+        var threshForExecution = 0.55;
+        if($("#" + buttonObj.id).css("opacity") < threshForExecution)  {
+            $("#" + buttonObj.id).fadeTo(10, 1).delay(40).fadeTo(10, 0.3);
+        }
+    }
 }
 
 //this object is responsible for creating array of galeries, that can be viewed in Lightbox
@@ -386,17 +393,21 @@ function Lightbox(arrOfGaleries) {
             switch(key.code || key.which) {
                 case "ArrowLeft":
                     this.prev();
+                    this.frame.lightenButton(this.frame.prev);
                     break;
                 case "ArrowRight":
                     this.next();
+                    this.frame.lightenButton(this.frame.next);
                     break;
                 case "Escape":
                     this.frame.hideFrame();
+                    this.frame.lightenButton(this.frame.cross);
                     break;
             }
         }
     }
 }
+
 
 /***                                     End of lbscript.js                                    ***/
 
