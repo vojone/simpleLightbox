@@ -22,7 +22,11 @@ $(document).ready(() => {
 });
 
 
-//object prototype for galeries
+/**
+ * Prototype for galery object that is showed in one coherent presentation
+ * @param {*} name id for each galery (typically is used name of lb subclass)
+ * @param {*} photo first photo, that will be in galery (galery cannsot be empty)
+ */
 function Galery(name, photo) {
     this.imgs = [photo];
     this.name = name;
@@ -33,8 +37,10 @@ function Galery(name, photo) {
     }
 }
 
-//this is prototype of object, that is responsible for creating HTML structure of lightbox and
-//changing its properties
+/**
+ * Object, that represents HTML structure, "frame" that is used for presenting photos
+ * @param {*} settings object from settings.js, that controls few visual aspects of HTML structure
+ */
 function LbHTMLStructure(settings) {
     this.settings = settings;
 
@@ -49,6 +55,9 @@ function LbHTMLStructure(settings) {
     this.caption = null;
     this.number = null;
 
+    /**
+     * Prepares HTML structure for LB presentation
+     */
     this.prepare = function() {
         //prepare lb window in background
         this.grandParent = this.createEl("div", "", "", "lb_cont");
@@ -62,7 +71,15 @@ function LbHTMLStructure(settings) {
         this.photo.style.maxWidth = settings.maxWidth;
 
         this.grandParent.appendChild(this.photo);
-        
+
+        this.createButtons();
+        this.createInfo();
+    }
+
+    /**
+     * Creates button for presentation
+     */
+    this.createButtons = function() {
         //next photo button
         this.next = this.createEl("img", "next.png", "Next image", "next");
         this.grandParent.appendChild(this.next);
@@ -81,7 +98,12 @@ function LbHTMLStructure(settings) {
         this.grandParent.appendChild(this.link);
         downImg = this.createEl("img", "download.png", "", "download");
         this.link.appendChild(downImg);
+    }
 
+    /**
+     * Creates "div" box with information about current photo (caption and number)
+     */
+    this.createInfo = function() {
         var info = this.createEl("div", "", "", "info");
         this.grandParent.appendChild(info); 
 
@@ -96,7 +118,14 @@ function LbHTMLStructure(settings) {
         }
     }
 
-    //returns created html element
+    /**
+     * Creates HTML element
+     * @param {*} type html tag, used for element
+     * @param {*} bg background image (can be empty)
+     * @param {*} title title text, showed when user hover cursor over the element
+     * @param {*} id string used for identification of new element
+     * @returns object with created element
+     */
     this.createEl = function(type, bg, title, id) {
         var newEl = document.createElement(type);
 
@@ -115,13 +144,22 @@ function LbHTMLStructure(settings) {
         return newEl;
     }
 
+    /**
+     * Updates HTML structure to current photo
+     * @param {*} imageObject object of image from page that should be showed
+     * @param {*} curImIndex index of current photo in galery (important for numbering)
+     * @param {*} totalImNumber total number of photos in current galery (important for numbering)
+     */
     this.update = function(imageObject, curImIndex, totalImNumber) {
         this.updateImage(imageObject);
         this.updateCaption(imageObject);
         this.updateNumber(curImIndex, totalImNumber);
     }
 
-    //updates photo source and download attributtes (and caption or numbering if they are enabled)
+    /**
+     * Updates main image element with corresponding photo
+     * @param {*} imageObject image that will be showed
+     */
     this.updateImage = function(imageObject) {
         this.photo.src = imageObject.src;
         this.link.href = imageObject.src;
@@ -141,6 +179,11 @@ function LbHTMLStructure(settings) {
         }
     }
 
+    /**
+     * Updates numbering in left corner
+     * @param {*} curImIndex index of current photo in galery object
+     * @param {*} totalImNumber total number of photos in galery
+     */
     this.updateNumber = function(curImIndex, totalImNumber) {
         if(this.number !== null) {
             if(totalImNumber > 1) {
@@ -154,12 +197,18 @@ function LbHTMLStructure(settings) {
         }
     }
 
-    //crops path to filename with extension
+    /**
+     * crops path to filename with extension
+     * @param {*} path, string that represents whole path to file
+     * @returns cropped path
+     */
     function getFilenameFromPath(path) {
         return path.substr(path.lastIndexOf("/") + 1);
     }
 
-    //Shows window with lb and initializes it with photo given in argument
+    /**
+     * Shows window with lb and initializes it with photo given in argument
+     */
     this.showFrame = function() {
         $("body").css("overflow", "hidden");
         $("#" + this.grandParent.id).fadeIn();
@@ -169,7 +218,9 @@ function LbHTMLStructure(settings) {
         }
     }
 
-    //Hides window with lb
+    /**
+     * Hides window with lb
+     */
     this.hideFrame = function() {
         $("#" + this.grandParent.id).fadeOut(); 
         $("body").css("overflow", "auto");
@@ -179,6 +230,11 @@ function LbHTMLStructure(settings) {
         }
     }
 
+    /**
+     * Sets visibility of buttons used for switching to next and previous photo
+     * @param {*} prevIsVisible if is true, left arrow will be visible 
+     * @param {*} nextIsVisible if is true, right arrow will be visible
+     */
     this.setArrowsVisibility = function(prevIsVisible = true, nextIsVisible = true) {
         if(prevIsVisible) {
             $("#" + this.prev.id).show();
@@ -195,6 +251,10 @@ function LbHTMLStructure(settings) {
         }
     } 
 
+    /**
+     * Makes short effect of clicking to button
+     * @param {*} buttonObj button that should be lighten
+     */
     this.lightenButton = function(buttonObj) {
         var threshForExecution = 0.55;
         if($("#" + buttonObj.id).css("opacity") < threshForExecution)  {
@@ -203,17 +263,21 @@ function LbHTMLStructure(settings) {
     }
 }
 
-//this object is responsible for creating array of galeries, that can be viewed in Lightbox
+/**
+ * Creates array of galeries for "main" lb object
+ */
 function GaleriesCreator() {
 
-    //returns array of galeries with images
+    /**
+     * Assembles photos to galeries (represented by Galery objects) and makes array from them
+     * @param {*} mainClassName class name that identifies lightboxed images
+     * @returns array of galeries
+     */
     this.getGals = function(mainClassName) {
         var imgs = [];
-        var currentGalery = null, imagesOnPage, selected, currentClassName, lastClassName;
+        var currentGalery = null, selected, currentClassName, lastClassName;
 
-        imagesOnPage = getAllImages(mainClassName);
-        //select only images with lb class
-        selected = selectLbImages(imagesOnPage, mainClassName);
+        selected = selectLbImages(mainClassName);
 
         currentClassName = null, lastClassName = null;
         for(let i = 0; selected[i] != null; i++) {
@@ -242,30 +306,26 @@ function GaleriesCreator() {
         return imgs;
     }
 
-    function getAllImages(mainClassName) {
+    /**
+     * Selected all images with proper class name on loaded page
+     * @param {*} mainClassName class name that identifies lightboxed images
+     * @returns array of images
+     */
+    function selectLbImages(mainClassName) {
         return document.getElementsByClassName(mainClassName);
     }
 
-    
-    //selects only images with lb classes
-    function selectLbImages(imArr, mainClassName) {
-        var result = [];
-
-        for(let i = 0; imArr[i] != null; i++) {
-            if(imArr[i].className.indexOf(mainClassName) != -1) {
-                result.push(imArr[i]);
-            }
-        }
-    
-        return result;
-    }
-
-    //return first subclass name after main class name
-    function getFirstSubclassName(currentEl, mainClassName) {
+    /**
+     * Return first subclass name of element
+     * @param {*} element element object
+     * @param {*} mainClassName name of main class, that identifies lightboxed images
+     * @returns 
+     */
+    function getFirstSubclassName(element, mainClassName) {
         var wholeClassName, mainClassEndWithGap, subclassStart, nextGapIndex;
         var result = null;
 
-        wholeClassName = currentEl.className;
+        wholeClassName = element.className;
         mainClassEndWithGap = wholeClassName.indexOf(mainClassName + " ", 0);
     
         if(mainClassEndWithGap != -1) {
@@ -285,15 +345,20 @@ function GaleriesCreator() {
     }
 }
 
-//this "main" object handles input events (such as button clicking or key pressing)
-//also holds cur. position
+/**
+ * "Main" object, which holds the current position and changes it
+ * @param {*} arrOfGaleries array of galeries that should be showed in lightbox
+ */
 function Lightbox(arrOfGaleries) {
     this.galeries = arrOfGaleries;
     this.curIm = 0;
     this.curGal = 0;
     this.frame = null;
 
-    //binds HTML structure to lightbox object
+    /**
+     * Binds corresponding HTML structure to this object
+     * @param {*} HTMLStruct created HTML structure
+     */
     this.bindFrame = function(HTMLStruct) {
         this.frame = HTMLStruct;
 
@@ -304,9 +369,15 @@ function Lightbox(arrOfGaleries) {
         this.frame.grandParent.addEventListener("click", (target) => {this.lbClose(target);});
     }
 
-    //loads next photo in current galery (when it is last photo go to start)
+    this.retCurGalLength = function() {
+        return this.galeries[this.curGal].imgs.length;
+    }
+
+    /**
+     * Loads next photo in current galery (when it is last photo go to start)
+     */
     this.next = function() {
-        var curGalLength = this.galeries[this.curGal].imgs.length; 
+        var curGalLength = this.retCurGalLength();
 
         this.curIm++;
 
@@ -314,12 +385,14 @@ function Lightbox(arrOfGaleries) {
             this.curIm = 0;
         }
 
-        this.frame.update(this.getCurrentIm(), this.curIm, this.galeries[this.curGal].imgs.length);   
+        this.frame.update(this.getCurrentIm(), this.curIm, curGalLength);   
     }
 
-    //loads previous photo in current galery
+    /**
+     * Loads previous photo in current galery
+     */
     this.prev = function() {
-        var curGalLength = this.galeries[this.curGal].imgs.length;
+        var curGalLength = this.retCurGalLength();
 
         this.curIm--;
 
@@ -327,10 +400,13 @@ function Lightbox(arrOfGaleries) {
             this.curIm = curGalLength - 1;
         }
 
-        this.frame.update(this.getCurrentIm(), this.curIm, this.galeries[this.curGal].imgs.length);    
+        this.frame.update(this.getCurrentIm(), this.curIm, curGalLength);    
     }
 
-    //hides window with lb when user clicks somewhere out of photo and buttons
+    /**
+     * His window with lb when user clicks somewhere out of photo and buttons
+     * @param {*} click event object
+     */
     this.lbClose = function(click) {
         var clickedEl = click.target, lbFrame = this.frame;
         
@@ -352,7 +428,9 @@ function Lightbox(arrOfGaleries) {
         lbFrame.hideFrame();
     }
 
-    //adds click event listener in proper form (with a specific arguments)
+    /**
+     * Adds click event listener in proper form (with a specific arguments)
+     */
     this.addOnClick =  function() {
         for(let i = 0; this.galeries[i] != null; i++) {
             for(let u = 0; this.galeries[i].imgs[u] != null; u++) {
@@ -363,7 +441,11 @@ function Lightbox(arrOfGaleries) {
         }
     }
 
-    //set current photo to chosen one (can be in any galery) and then show lightbox
+    /**
+     * Sets current photo to chosen one (can be in any galery) and then show lightbox
+     * @param {*} gal index of new position in galery array
+     * @param {*} im index of new position in current galery
+     */
     this.showAt = function(gal = 0, im = 0) {
         this.set(gal, im);
 
@@ -377,20 +459,29 @@ function Lightbox(arrOfGaleries) {
         this.frame.showFrame();
     }
 
-    //set position in presentation to given values
+    /**
+     * Sets position in presentation to given values
+     * @param {*} gal index of new position in galery array
+     * @param {*} im index of new position in current galery
+     */
     this.set = function(gal = 0, im = 0) {
         this.curGal = gal;
         this.curIm = im;
 
-        this.frame.update(this.getCurrentIm(), this.curIm, this.galeries[this.curGal].imgs.length);
+        this.frame.update(this.getCurrentIm(), this.curIm, this.retCurGalLength());
     }
 
-    //returns current "position" in presentation
+    /**
+     * 
+     * @returns current object of image
+     */
     this.getCurrentIm = function() {
         return this.galeries[this.curGal].imgs[this.curIm];
     }
 
-    //adds corresponding event
+    /**
+     * Adds corresponding event
+     */
     this.bindKeys = function() {
 
         $(document).keydown((keyPressed) => {
@@ -398,45 +489,9 @@ function Lightbox(arrOfGaleries) {
         });
     }
 
-    //adds click event listener in proper form (with a specific arguments)
-    this.addOnClick =  function() {
-        for(let i = 0; this.galeries[i] != null; i++) {
-            for(let u = 0; this.galeries[i].imgs[u] != null; u++) {
-                eval("this.galeries[i].imgs[u].addEventListener(\"click\", () => { \
-                    this.showAt( + " + i + ", " + u + "); \
-                    });");
-            }
-        }
-    }
-
-    //set current photo to chosen one and then show lightbox
-    this.showAt = function(gal = 0, im = 0) {
-        this.set(gal, im);
-        this.frame.showFrame();
-    }
-
-    //set position in presentation to given values
-    this.set = function(gal = 0, im = 0) {
-        this.curGal = gal;
-        this.curIm = im;
-
-        this.frame.update(this.getCurrentIm(), this.curIm, this.galeries[this.curGal].imgs.length);
-    }
-
-    //returns current "position" in presentation
-    this.getCurrentIm = function() {
-        return this.galeries[this.curGal].imgs[this.curIm];
-    }
-
-    //adds corresponding event
-    this.bindKeys = function() {
-
-        $(document).keydown((keyPressed) => {
-            this.keyHandler(keyPressed); 
-        });
-    }
-
-    //solves pressed key
+    /**
+     * Solves pressed key
+     */ 
     this.keyHandler = function(key) {
         pageState = this.frame.grandParent.style.display;
 
