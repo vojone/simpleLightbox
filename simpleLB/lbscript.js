@@ -12,9 +12,13 @@ $(document).ready(() => {
     galCreator = new GaleriesCreator();
 
     lightbox = new Lightbox(galCreator.getGals("lb"));
+
     lightbox.bindFrame(lbHtml);
     lightbox.addOnClick();
-    lightbox.bindKeys();
+
+    if(settings.keyboardEnable) {
+        lightbox.bindKeys();
+    }
 });
 
 
@@ -53,6 +57,10 @@ function LbHTMLStructure(settings) {
     
         document.getElementsByTagName("html")[0].appendChild(this.grandParent);
         this.photo = this.createEl("img", "", "", "main_img");
+
+        this.photo.style.maxHeight = settings.maxHeight;
+        this.photo.style.maxWidth = settings.maxWidth;
+
         this.grandParent.appendChild(this.photo);
         
         //next photo button
@@ -77,11 +85,15 @@ function LbHTMLStructure(settings) {
         var info = this.createEl("div", "", "", "info");
         this.grandParent.appendChild(info); 
 
-        this.caption = this.createEl("div", "", "", "caption");
-        info.appendChild(this.caption);
+        if(this.settings.captions) {
+            this.caption = this.createEl("div", "", "", "caption");
+            info.appendChild(this.caption);
+        }
 
-        this.number = this.createEl("div", "", "Current/Total", "numbering");
-        info.appendChild(this.number);
+        if(this.settings.numbering) {
+            this.number = this.createEl("div", "", "Current/Total", "numbering");
+            info.appendChild(this.number);
+        }
     }
 
     //returns created html element
@@ -408,7 +420,7 @@ function Lightbox(arrOfGaleries) {
         this.curGal = gal;
         this.curIm = im;
 
-        this.frame.update(this.getCurrentIm());
+        this.frame.update(this.getCurrentIm(), this.curIm, this.galeries[this.curGal].imgs.length);
     }
 
     //returns current "position" in presentation
