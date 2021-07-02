@@ -66,6 +66,8 @@ function LbHTMLStructure(settings) {
     
         document.getElementsByTagName("html")[0].appendChild(this.grandParent);
         this.photo = this.createEl("img", "", "", "main_img");
+        this.photo.loading = "lazy";
+        this.photo.alt = "Something went wrong with your image.<br>Try to check the path to image...";
 
         this.photo.style.maxHeight = settings.maxHeight;
         this.photo.style.maxWidth = settings.maxWidth;
@@ -158,14 +160,53 @@ function LbHTMLStructure(settings) {
 
     /**
      * Updates main image element with corresponding photo
-     * @param {*} imageObject image that will be showed
+     * @param {*} imageObject image that will be showed lightbox (or its original version)
      */
     this.updateImage = function(imageObject) {
-        this.photo.src = imageObject.src;
-        this.link.href = imageObject.src;
-        this.link.download = getFilenameFromPath(imageObject.src); 
+
+        var newImSrc = imageObject.src;
+        var origImSrc;
+
+        if((origImSrc = findOriginalImage(imageObject)) !== null) {
+            newImSrc = origImSrc;
+        }
+
+        this.photo.src = newImSrc;
+        this.link.href = newImSrc;
+        this.link.download = getFilenameFromPath(newImSrc); 
     }
 
+
+    /**
+     * Find path to image with original quality (if it is possible)
+     * @param {*} imageObject thumbnail image object, that contains necessary attributes ("data-orig")
+     * @returns null if path cannot be found or path to original image
+     * @note there is possible to end "data-orig" content with * or /,
+     * in this case is used name of thumbnail for original image and rest of path from "data-orig"
+     */
+    function findOriginalImage(imageObject) {
+        var pathToOrig = imageObject.getAttribute("data-orig");
+
+        if(pathToOrig !== null) {
+            var pathTail = getFilenameFromPath(pathToOrig);
+
+            if(pathTail == "*" || pathTail == "") {
+                var origDirectory = pathToOrig.substr(0, pathToOrig.length - 1);
+
+                return origDirectory + getFilenameFromPath(imageObject.src);
+            }
+            else {
+                return pathToOrig;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Updates caption in lightbox
+     * @param {*} imageObject object contains viewed image
+     */
     this.updateCaption = function(imageObject) {
         if(this.caption !== null) {
             var captionContent = imageObject.getAttribute("data-caption");
