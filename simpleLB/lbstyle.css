@@ -69,7 +69,7 @@
 }
 
 #lb_cont #next:hover, #prev:hover {
-    opacity: 1;
+    opacity: 1 !important;
 }
 
 #lb_cont #info {

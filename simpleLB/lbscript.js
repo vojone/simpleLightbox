@@ -79,6 +79,20 @@ function LbHTMLStructure(settings) {
     }
 
     /**
+     * Destroys prepared HTML structure
+     * @note can be used e. g. when multiple lightbox html structures are created
+     */
+    this.destroy = function() {
+        while(this.grandParent.firstChild) {
+            this.grandParent.removeChild(this.grandParent.firstChild);
+        }
+
+        if(this.grandParent) {
+            $("#" + this.grandParent.id).remove();
+        }
+    }
+
+    /**
      * Creates button for presentation
      */
     this.createButtons = function() {
