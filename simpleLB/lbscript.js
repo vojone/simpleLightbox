@@ -181,7 +181,7 @@ function LbHTMLStructure(settings) {
         var newImSrc = imageObject.src;
         var origImSrc;
 
-        if((origImSrc = findOriginalImage(imageObject)) !== null) {
+        if((origImSrc = this.findOriginalImage(imageObject)) !== null) {
             newImSrc = origImSrc;
         }
 
@@ -198,7 +198,7 @@ function LbHTMLStructure(settings) {
      * @note there is possible to end "data-orig" content with * or /,
      * in this case is used name of thumbnail for original image and rest of path from "data-orig"
      */
-    function findOriginalImage(imageObject) {
+    this.findOriginalImage = function(imageObject) {
         var pathToOrig = imageObject.getAttribute("data-orig");
 
         if(pathToOrig !== null) {
@@ -440,6 +440,8 @@ function Lightbox(arrOfGaleries) {
             this.curIm = 0;
         }
 
+        this.preload();
+
         this.frame.update(this.getCurrentIm(), this.curIm, curGalLength);   
     }
 
@@ -454,6 +456,8 @@ function Lightbox(arrOfGaleries) {
         if (this.curIm < 0) {
             this.curIm = curGalLength - 1;
         }
+
+        this.preload();
 
         this.frame.update(this.getCurrentIm(), this.curIm, curGalLength);    
     }
@@ -523,11 +527,46 @@ function Lightbox(arrOfGaleries) {
         this.curGal = gal;
         this.curIm = im;
 
+        this.preload();
+
         this.frame.update(this.getCurrentIm(), this.curIm, this.retCurGalLength());
     }
 
     /**
-     * 
+     * Preloads source image of next and previous images
+     */
+    this.preload = function() {
+        var nextIm, prevIm;
+
+        nextIm = new Image();
+        prevIm = new Image();
+
+        nextIm.src = this.frame.findOriginalImage(this.getCurImNeighbour(1));
+        prevIm.src = this.frame.findOriginalImage(this.getCurImNeighbour(-1));
+    }
+
+    /**
+     * @param diff differencce between cur. index and wanted image (can't be positive or negative)
+     * @return image object of image in cur galery on index curIm + diff
+     */
+    this.getCurImNeighbour = function(diff) {
+        var curGalLen = this.retCurGalLength(), resIndex;
+        diff = diff % curGalLen;;
+
+        if(this.curIm + diff >= curGalLen) {
+            resIndex = (this.curIm + diff) % curGalLen;
+        }
+        else if (this.curIm + diff < 0) {
+            resIndex = curGalLen - Math.abs(this.curIm + diff);
+        }
+        else {
+            resIndex = this.curIm + diff;
+        }
+
+        return this.galeries[this.curGal].imgs[resIndex];
+    }
+
+    /**
      * @returns current object of image
      */
     this.getCurrentIm = function() {
