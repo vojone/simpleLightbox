@@ -66,18 +66,28 @@ function LbHTMLStructure(settings) {
         this.grandParent.style.display = "none"; //lb is not showed when page is loaded
 
         document.getElementsByTagName("html")[0].appendChild(this.grandParent);
-        this.photo = this.createEl("img", "", "", "main_img");
+
+        this.createPhotoEl();
+        this.createButtons();
+        this.createInfo();
+
+        this.createLoader();
+    }
+
+    /**
+     * Creates main element, which shows photo to user
+     * @note needs grandparent element to be created first
+     */
+    this.createPhotoEl = function() {
+        this.photo = this.createEl("img", "", "Photo", "main_img");
         this.photo.loading = "lazy";
-        this.photo.alt = "Something went wrong with your image.<br>Try to check the path to image...";
+        this.photo.alt = "Something went wrong with your image...\
+                          Try to check the path to image and if image exists...";
 
         this.photo.style.maxHeight = settings.maxHeight;
         this.photo.style.maxWidth = settings.maxWidth;
 
         this.grandParent.appendChild(this.photo);
-
-        this.createLoader();
-        this.createButtons();
-        this.createInfo();
     }
 
     /**
@@ -145,7 +155,15 @@ function LbHTMLStructure(settings) {
     this.createLoader = function() {
         this.loader = this.createEl("div", "", "Loading...", "lb_loader");
         this.grandParent.appendChild(this.loader);
+
         this.photo.addEventListener("load", () => {this.hideLoader();});
+
+        //Just dummy obj. to eliminate bug, when non-existing photo is  still loading and loading
+        var empty = new Image(); 
+        empty.src = "lbscript.js";
+        this.updateImage(empty);
+        this.photo.addEventListener("error", () => {this.hideLoader();}); //<= err. handling func.
+
         var nOfLoaderParts = 3;
 
         for(var i = 0; i < nOfLoaderParts; i++) {
@@ -455,7 +473,7 @@ function Lightbox(arrOfGaleries) {
     this.frame = null;
 
     /**
-     * Binds corresponding HTML structure to this object
+     * Binds corresponding HTML structure to this object and sets src of main photo to first image
      * @param {*} HTMLStruct created HTML structure
      */
     this.bindFrame = function(HTMLStruct) {

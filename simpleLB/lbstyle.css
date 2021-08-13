@@ -25,6 +25,9 @@
     transform: translate(-50%, -50%);
     max-width: 100%;
     max-height: 100%;
+
+    color: white;
+    font-family: Verdana;
 }
 
 #lb_cont #cross, #download {
