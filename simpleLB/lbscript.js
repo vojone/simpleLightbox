@@ -162,7 +162,7 @@ function LbHTMLStructure(settings) {
         var empty = new Image(); 
         empty.src = "lbscript.js";
         this.updateImage(empty);
-        this.photo.addEventListener("error", () => {this.hideLoader();}); //<= err. handling func.
+        this.photo.addEventListener("error", () => {this.hideLoader();}); //<= err handling func.
 
         var nOfLoaderParts = 3;
 
@@ -654,12 +654,16 @@ function Lightbox(arrOfGaleries) {
         if(pageState != "none") {
             switch(key.code || key.which) {
                 case "ArrowLeft":
-                    this.prev();
-                    this.frame.lightenButton(this.frame.prev);
+                    if(this.retCurGalLength() > 1) {
+                        this.prev();
+                        this.frame.lightenButton(this.frame.prev);
+                    }
                     break;
                 case "ArrowRight":
-                    this.next();
-                    this.frame.lightenButton(this.frame.next);
+                    if(this.retCurGalLength() > 1) {
+                        this.next();
+                        this.frame.lightenButton(this.frame.next);
+                    }
                     break;
                 case "Escape":
                     this.frame.hideFrame();
