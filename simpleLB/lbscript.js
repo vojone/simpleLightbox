@@ -54,6 +54,7 @@ function LbHTMLStructure(settings) {
 
     this.caption = null;
     this.number = null;
+    this.loader = null;
 
     /**
      * Prepares HTML structure for LB presentation
@@ -63,7 +64,7 @@ function LbHTMLStructure(settings) {
         this.grandParent = this.createEl("div", "", "", "lb_cont");
         this.grandParent.style.backgroundColor = "rgba(0, 0, 0, " + this.settings.bgAlpha + ")"; 
         this.grandParent.style.display = "none"; //lb is not showed when page is loaded
-    
+
         document.getElementsByTagName("html")[0].appendChild(this.grandParent);
         this.photo = this.createEl("img", "", "", "main_img");
         this.photo.loading = "lazy";
@@ -74,6 +75,7 @@ function LbHTMLStructure(settings) {
 
         this.grandParent.appendChild(this.photo);
 
+        this.createLoader();
         this.createButtons();
         this.createInfo();
     }
@@ -94,6 +96,7 @@ function LbHTMLStructure(settings) {
 
     /**
      * Creates button for presentation
+     * @note Grandparent element must be created first
      */
     this.createButtons = function() {
         //next photo button
@@ -118,6 +121,7 @@ function LbHTMLStructure(settings) {
 
     /**
      * Creates "div" box with information about current photo (caption and number)
+     * @note Grandparent element must be created first
      */
     this.createInfo = function() {
         var info = this.createEl("div", "", "", "info");
@@ -132,6 +136,44 @@ function LbHTMLStructure(settings) {
             this.number = this.createEl("div", "", "Current/Total", "numbering");
             info.appendChild(this.number);
         }
+    }
+
+    /**
+     * Creates all necessary elements for loader
+     * @note Grandparent element and main photo element must be created first
+     */
+    this.createLoader = function() {
+        this.loader = this.createEl("div", "", "Loading...", "lb_loader");
+        this.grandParent.appendChild(this.loader);
+        this.photo.addEventListener("load", () => {this.hideLoader();});
+        var nOfLoaderParts = 3;
+
+        for(var i = 0; i < nOfLoaderParts; i++) {
+            var newPart = this.createEl("div", "", "", "p" + i);
+            newPart.className = "part";
+            newPart.style.animationDelay = i*2 + "s";
+            this.loader.appendChild(newPart);
+        }
+
+        var titleCont = this.createEl("div", "", "", "title_cont");
+        titleCont.innerHTML = "Loading...";
+        this.loader.appendChild(titleCont);
+    }
+
+    /**
+     * Shows loader hides photo (inverse to hide loader)
+     */
+    this.showLoader = function() {
+        $("#" + this.loader.id).show();
+        $("#" + this.photo.id).hide();
+    }
+
+    /**
+     * Shows photo hides loader (inverse to hide loader)
+     */
+     this.hideLoader = function() {
+        $("#" + this.photo.id).show();
+        $("#" + this.loader.id).hide();
     }
 
     /**
@@ -177,6 +219,8 @@ function LbHTMLStructure(settings) {
      * @param {*} imageObject image that will be showed lightbox (or its original version)
      */
     this.updateImage = function(imageObject) {
+
+        this.showLoader();
 
         var newImSrc = imageObject.src;
         var origImSrc;
