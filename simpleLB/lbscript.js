@@ -100,7 +100,7 @@ function LbHTMLStructure(settings) {
         }
 
         if(this.grandParent) {
-            $("#" + this.grandParent.id).remove();
+            $(this.grandParent).remove();
         }
     }
 
@@ -156,13 +156,13 @@ function LbHTMLStructure(settings) {
         this.loader = this.createEl("div", "", "Loading...", "lb_loader");
         this.grandParent.appendChild(this.loader);
 
-        this.photo.addEventListener("load", () => {this.hideLoader();});
+        this.photo.addEventListener("load", () => {this.hideLoader(50);});
 
         //Just dummy obj. to eliminate bug, when non-existing photo is  still loading and loading
         var empty = new Image(); 
-        empty.src = "lbscript.js";
+        empty.src = "images/back.png";
         this.updateImage(empty);
-        this.photo.addEventListener("error", () => {this.hideLoader();}); //<= err handling func.
+        this.photo.addEventListener("error", () => {this.hideLoader(50);}); //<= err handling func.
 
         var nOfLoaderParts = 3;
 
@@ -180,18 +180,20 @@ function LbHTMLStructure(settings) {
 
     /**
      * Shows loader hides photo (inverse to hide loader)
+     * @time time it takes for the state to change
      */
-    this.showLoader = function() {
-        $("#" + this.loader.id).show();
-        $("#" + this.photo.id).hide();
+    this.showLoader = function(time = 0) {
+        $(this.loader).fadeIn(time);
+        $(this.photo).fadeOut(time);
     }
 
     /**
      * Shows photo hides loader (inverse to hide loader)
+     * @time time it takes for the state to change
      */
-     this.hideLoader = function() {
-        $("#" + this.photo.id).show();
-        $("#" + this.loader.id).hide();
+     this.hideLoader = function(time = 0) {
+        $(this.photo).fadeIn(time);
+        $(this.loader).fadeOut(time);
     }
 
     /**
@@ -221,12 +223,32 @@ function LbHTMLStructure(settings) {
     }
 
     /**
-     * Updates HTML structure to current photo
+     * Updates HTML structure to current photo and (hides arrows, if photo is last/first and loop is disabled)
      * @param {*} imageObject object of image from page that should be showed
      * @param {*} curImIndex index of current photo in galery (important for numbering)
      * @param {*} totalImNumber total number of photos in current galery (important for numbering)
      */
     this.update = function(imageObject, curImIndex, totalImNumber) {
+        if(totalImNumber > 1) {
+            if(!this.settings.loop) {
+                if(curImIndex == 0) { //current photo is first
+                    this.setArrowsVisibility(false, true, 80);
+                }
+                else if(curImIndex == totalImNumber - 1) { //current photo is last
+                    this.setArrowsVisibility(true, false, 80);
+                }
+                else {
+                    this.setArrowsVisibility(true, true);
+                }
+            }
+            else {
+                this.setArrowsVisibility(true, true);
+            }
+        }
+        else {
+            this.setArrowsVisibility(false, false);
+        }
+
         this.updateImage(imageObject);
         this.updateCaption(imageObject);
         this.updateNumber(curImIndex, totalImNumber);
@@ -328,7 +350,7 @@ function LbHTMLStructure(settings) {
      */
     this.showFrame = function() {
         $("body").css("overflow", "hidden");
-        $("#" + this.grandParent.id).fadeIn();
+        $(this.grandParent).fadeIn();
 
         if(this.settings.blurFlag) {
             $("body").css("filter", "blur(5px)");
@@ -339,7 +361,7 @@ function LbHTMLStructure(settings) {
      * Hides window with lb
      */
     this.hideFrame = function() {
-        $("#" + this.grandParent.id).fadeOut(); 
+        $(this.grandParent).fadeOut(); 
         $("body").css("overflow", "auto");
 
         if(this.settings.blurFlag) {
@@ -351,20 +373,21 @@ function LbHTMLStructure(settings) {
      * Sets visibility of buttons used for switching to next and previous photo
      * @param {*} prevIsVisible if is true, left arrow will be visible 
      * @param {*} nextIsVisible if is true, right arrow will be visible
+     * @param {*} time time of state changing (fadeOut and fadeIn are used for chaging visibility)
      */
-    this.setArrowsVisibility = function(prevIsVisible = true, nextIsVisible = true) {
+    this.setArrowsVisibility = function(prevIsVisible = true, nextIsVisible = true, time = 0) {
         if(prevIsVisible) {
-            $("#" + this.prev.id).show();
+            $(this.prev).fadeIn(time);
         }
         else {
-            $("#" + this.prev.id).hide();
+            $(this.prev).fadeOut(time);
         }
 
         if(nextIsVisible) {
-            $("#" + this.next.id).show();
+            $(this.next).fadeIn(time);
         }
         else {
-            $("#" + this.next.id).hide();
+            $(this.next).fadeOut(time);
         }
     } 
 
@@ -374,8 +397,14 @@ function LbHTMLStructure(settings) {
      */
     this.lightenButton = function(buttonObj) {
         var threshForExecution = 0.55;
-        if($("#" + buttonObj.id).css("opacity") < threshForExecution)  {
-            $("#" + buttonObj.id).fadeTo(10, 1).delay(40).fadeTo(10, 0.3);
+
+        var isVisible = $(buttonObj).css("display") != "none";
+        isVisible = isVisible && $(buttonObj).css("visibility") != "hidden";
+
+        if(isVisible) {
+            if($(buttonObj).css("opacity") < threshForExecution)  {
+                $(buttonObj).fadeTo(10, 1).delay(40).fadeTo(10, 0.3);
+            }
         }
     }
 }
@@ -496,15 +525,21 @@ function Lightbox(arrOfGaleries) {
     this.next = function() {
         var curGalLength = this.retCurGalLength();
 
-        this.curIm++;
-
-        if (this.curIm > (curGalLength - 1)) {
-            this.curIm = 0;
+        var isLastPhoto = (this.curIm == curGalLength - 1);
+        if(!this.frame.settings.loop && isLastPhoto) {
+            return;
         }
+        else {
+            this.curIm++;
 
-        this.preload();
+            if (this.curIm > (curGalLength - 1)) {
+                this.curIm = 0;
+            }
 
-        this.frame.update(this.getCurrentIm(), this.curIm, curGalLength);   
+            this.preload();
+
+            this.frame.update(this.getCurrentIm(), this.curIm, curGalLength);
+        }
     }
 
     /**
@@ -513,15 +548,21 @@ function Lightbox(arrOfGaleries) {
     this.prev = function() {
         var curGalLength = this.retCurGalLength();
 
-        this.curIm--;
-
-        if (this.curIm < 0) {
-            this.curIm = curGalLength - 1;
+        var isFirstPhoto = (this.curIm == 0);
+        if(!this.frame.settings.loop && isFirstPhoto) {
+            return;
         }
+        else {
+            this.curIm--;
 
-        this.preload();
+            if (this.curIm < 0) {
+                this.curIm = curGalLength - 1;
+            }
 
-        this.frame.update(this.getCurrentIm(), this.curIm, curGalLength);    
+            this.preload();
+
+            this.frame.update(this.getCurrentIm(), this.curIm, curGalLength);
+        }
     }
 
     /**
@@ -569,13 +610,6 @@ function Lightbox(arrOfGaleries) {
      */
     this.showAt = function(gal = 0, im = 0) {
         this.set(gal, im);
-
-        if(this.galeries[this.curGal].imgs.length > 1) {
-            this.frame.setArrowsVisibility(true, true);
-        }
-        else {
-            this.frame.setArrowsVisibility(false, false);
-        }
 
         this.frame.showFrame();
     }
@@ -654,20 +688,16 @@ function Lightbox(arrOfGaleries) {
         if(pageState != "none") {
             switch(key.code || key.which) {
                 case "ArrowLeft":
-                    if(this.retCurGalLength() > 1) {
-                        this.prev();
-                        this.frame.lightenButton(this.frame.prev);
-                    }
+                    this.frame.lightenButton(this.frame.prev);
+                    this.prev();
                     break;
                 case "ArrowRight":
-                    if(this.retCurGalLength() > 1) {
-                        this.next();
-                        this.frame.lightenButton(this.frame.next);
-                    }
+                    this.frame.lightenButton(this.frame.next);
+                    this.next();
                     break;
                 case "Escape":
-                    this.frame.hideFrame();
                     this.frame.lightenButton(this.frame.cross);
+                    this.frame.hideFrame();
                     break;
             }
         }
