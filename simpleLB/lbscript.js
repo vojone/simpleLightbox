@@ -500,6 +500,7 @@ function Lightbox(arrOfGaleries) {
     this.curIm = 0;
     this.curGal = 0;
     this.frame = null;
+    this.keyboardBlocked = false;
 
     /**
      * Binds corresponding HTML structure to this object and sets src of main photo to first image
@@ -683,9 +684,12 @@ function Lightbox(arrOfGaleries) {
      * Solves pressed key
      */ 
     this.keyHandler = function(key) {
-        pageState = this.frame.grandParent.style.display;
+        lbIsVisible = this.frame.grandParent.style.display != "none";
 
-        if(pageState != "none") {
+        if(lbIsVisible && !this.keyboardBlocked) {
+            this.keyboardBlocked = true;
+            setTimeout(() => {this.keyboardBlocked = false;}, 50);
+
             switch(key.code || key.which) {
                 case "ArrowLeft":
                     this.frame.lightenButton(this.frame.prev);
