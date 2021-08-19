@@ -30,50 +30,106 @@
     font-family: Verdana;
 }
 
-#lb_cont #cross, #download {
+/* Buttons in right top corner */
+
+#lb_cont #cross, #lb_cont #download {
     display: block;
     position: relative;
     float: right;
     margin: 10px 10px 0 0;
 
     max-width: 60px;
-    min-width: 30px;
-    width: calc(30px + 0.75vw);
+    min-width: 24px;
+    width: calc(24px + 0.75vw);
 
     cursor: pointer;
     opacity: 0.3;
     transition: opacity 0.3s;
 }
 
-#lb_cont #cross:hover, #download:hover {
-    opacity: 1;
+#lb_cont #download {
+    margin-left: 5px;
 }
 
-#lb_cont #next, #prev {
+#lb_cont #cross:hover, #lb_cont #download:hover {
+    opacity: 1 !important;
+}
+
+#lb_cont #butt_box {
+    display: block;
+    position: relative;
+    float: right;
+
+    border-radius: 0 0 0 10%;
+
+    background-color: rgba(0, 0, 0, 0.1);
+    box-shadow:  0 0 10px 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+#lb_cont #butt_box:hover {
+    background-color: rgba(0, 0, 0, 0.45);
+    box-shadow:  0 0 10px 10px rgba(0, 0, 0, 0.45);
+}
+
+/* Arrows on left side and right side */
+
+#lb_cont #next_box, #lb_cont #prev_box, #lb_cont > #next, #lb_cont > #prev {
     margin: 0;
     position: absolute;
     top: 50%;
-    right: 0;
-    padding: 30px 10px 30px 20px;
 
+    transform: translate(0, -50%);
+    cursor: pointer;
+}
+
+#lb_cont #next_box, #lb_cont > #next {
+    right: 0;
+    border-radius: 10% 0 0 10%;
+}
+
+#lb_cont #prev_box, #lb_cont > #prev {
+    left: 0;
+    border-radius: 0 10% 10% 0;
+}
+
+#lb_cont #next_box, #prev_box {
+    background-color: rgba(0, 0, 0, 0.05);
+    box-shadow:  0 0 10px 10px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+#lb_cont #next_box:hover, #prev_box:hover {
+    background-color: rgba(0, 0, 0, 0.45);
+    box-shadow:  0 0 10px 10px rgba(0, 0, 0, 0.45);
+}
+
+#next_box > #next, #prev_box > #prev {
+    position: relative;
+}
+
+#lb_cont #next, #lb_cont #prev {
     max-height: 70px;
     min-height: 50px;
     height: calc(50px + 0.75vw);
 
-    transform: translate(0, -50%);
-    cursor: pointer;
     opacity: 0.3;
     transition: opacity 0.3s;
 }
 
 #lb_cont #prev {
-    left: 0;
     padding: 30px 20px 30px 10px;
 }
 
-#lb_cont #next:hover, #prev:hover {
+#lb_cont #next {
+    padding: 30px 10px 30px 20px;
+}
+
+#lb_cont #next:hover, #lb_cont #prev:hover {
     opacity: 1 !important;
 }
+
+/* Info box and numbering */
 
 #lb_cont #info {
     position: absolute;
@@ -90,6 +146,8 @@
 #lb_cont #info #caption {
     margin-bottom: 5px;
 }
+
+/* Loader */
 
 #lb_loader {
     position: absolute; 

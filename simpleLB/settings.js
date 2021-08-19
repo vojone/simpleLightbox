@@ -17,6 +17,7 @@ const settings = {                      //MEANING:
     captions: true,                     //allows captions (it can be defined for each photos by data-caption attribute)
     numbering: true,                    //allows numbering
     keyboardEnable: true,               //allows controlling galery by keyboard
+    shadows: true,                      //allows creation of dark background behind the buttons and arrows (it can be disturbing, but is more user friendly) 
 
-    loop: true,                         //allows infinity presentation (from last photo you can skip to first) = tru
+    loop: false,                         //allows infinity presentation (from last photo you can skip to first) = true
 }

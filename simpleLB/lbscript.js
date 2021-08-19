@@ -111,22 +111,44 @@ function LbHTMLStructure(settings) {
     this.createButtons = function() {
         //next photo button
         this.next = this.createEl("img", "next.png", "Next image", "next");
-        this.grandParent.appendChild(this.next);
+        if(settings.shadows) {
+            var nextBox = this.createEl("div", "", "", "next_box");
+            nextBox.appendChild(this.next);
+            this.grandParent.appendChild(nextBox);
+        }
+        else {
+            this.grandParent.appendChild(this.next);
+        }
         
         //previous photo button
         this.prev = this.createEl("img", "back.png", "Previous image", "prev");
-        this.grandParent.appendChild(this.prev);
-
+        if(settings.shadows) {
+            var prevBox = this.createEl("div", "", "", "prev_box");
+            prevBox.appendChild(this.prev);
+            this.grandParent.appendChild(prevBox);
+        }
+        else {
+            this.grandParent.appendChild(this.prev);
+        }
 
         //close button 
         this.cross = this.createEl("img", "close.png", "Close galery (Esc)", "cross");
-        this.grandParent.appendChild(this.cross);
 
         //downloading button
         this.link = this.createEl("a", "", "Download image", "");
-        this.grandParent.appendChild(this.link);
         downImg = this.createEl("img", "download.png", "", "download");
         this.link.appendChild(downImg);
+
+        if(settings.shadows) {
+            var buttBox = this.createEl("div", "", "", "butt_box");
+            buttBox.appendChild(this.cross);
+            buttBox.appendChild(this.link);
+            this.grandParent.appendChild(buttBox);
+        }
+        else {
+            this.grandParent.appendChild(this.cross);
+            this.grandParent.appendChild(this.link);
+        }
     }
 
     /**
@@ -229,13 +251,25 @@ function LbHTMLStructure(settings) {
      * @param {*} totalImNumber total number of photos in current galery (important for numbering)
      */
     this.update = function(imageObject, curImIndex, totalImNumber) {
+        this.updateArrows(curImIndex, totalImNumber);
+        this.updateImage(imageObject);
+        this.updateCaption(imageObject);
+        this.updateNumber(curImIndex, totalImNumber);
+    }
+
+    /**
+     * Updates arrows visibility
+     * @param {*} curImIndex index of current photo in galery (important for numbering)
+     * @param {*} totalImNumber total number of photos in current galery (important for numbering)
+     */
+    this.updateArrows = function(curImIndex, totalImNumber) {
         if(totalImNumber > 1) {
             if(!this.settings.loop) {
                 if(curImIndex == 0) { //current photo is first
-                    this.setArrowsVisibility(false, true, 80);
+                    this.setArrowsVisibility(false, true, 30);
                 }
                 else if(curImIndex == totalImNumber - 1) { //current photo is last
-                    this.setArrowsVisibility(true, false, 80);
+                    this.setArrowsVisibility(true, false, 30);
                 }
                 else {
                     this.setArrowsVisibility(true, true);
@@ -248,10 +282,6 @@ function LbHTMLStructure(settings) {
         else {
             this.setArrowsVisibility(false, false);
         }
-
-        this.updateImage(imageObject);
-        this.updateCaption(imageObject);
-        this.updateNumber(curImIndex, totalImNumber);
     }
 
     /**
@@ -361,8 +391,9 @@ function LbHTMLStructure(settings) {
      * Hides window with lb
      */
     this.hideFrame = function() {
-        $(this.grandParent).fadeOut(); 
-        $("body").css("overflow", "auto");
+        $(this.grandParent).fadeOut(() => {
+            $("body").css("overflow", "auto");
+        }); 
 
         if(this.settings.blurFlag) {
             $("body").css("filter", "none");
@@ -403,7 +434,7 @@ function LbHTMLStructure(settings) {
 
         if(isVisible) {
             if($(buttonObj).css("opacity") < threshForExecution)  {
-                $(buttonObj).fadeTo(10, 1).delay(40).fadeTo(10, 0.3);
+                $(buttonObj).fadeTo(10, 1).delay(100).fadeTo(10, 0.25);
             }
         }
     }
@@ -579,7 +610,9 @@ function Lightbox(arrOfGaleries) {
             clickedEl = clickedEl.parentElement;
         }
         
-        var exceptions = [lbFrame.photo, lbFrame.next, lbFrame.prev, lbFrame.link];
+        var exceptions = [lbFrame.photo, lbFrame.next, 
+                        lbFrame.prev, lbFrame.link, 
+                        lbFrame.caption, lbFrame.number];
 
         //react on everything except of buttons
         for(let i = 0; exceptions[i] != null; i++) {
