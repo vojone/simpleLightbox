@@ -1,8 +1,13 @@
 ﻿/** ***********************************************************************************************
  *                                            lbscript.js                    
  *                                                                   
- *                   Purpose: File contains implementation of Simple lightbox galery                                                        
+ *                   Purpose: File contains implementation of Simple lightbox galery   
+ *                                                      
  *                      Note: I will be glad for improvements and fixed bugs
+ *                            This long file is little bit unclear (it will be probably better
+ *                            to divide it into object prototypes and "main" part, but in this
+ *                            case it is more complicated for non-power user to add simpleLB 
+ *                            to his webpage)
  *********************************************************************************************** */
 
 $(document).ready(() => {
@@ -82,7 +87,7 @@ function LbHTMLStructure(settings) {
         this.photo = this.createEl("img", "", "Photo", "main_img");
         this.photo.loading = "lazy";
         this.photo.alt = "Something went wrong with your image...\
-                          Try to check the path to image and if image exists...";
+                          Try to check the path to the image and if it exists...";
 
         this.photo.style.maxHeight = settings.maxHeight;
         this.photo.style.maxWidth = settings.maxWidth;
@@ -112,7 +117,7 @@ function LbHTMLStructure(settings) {
         //next photo button
         this.next = this.createEl("img", "next.png", "Next image", "next");
         if(settings.shadows) {
-            var nextBox = this.createEl("div", "", "", "next_box");
+            let nextBox = this.createEl("div", "", "", "next_box");
             nextBox.appendChild(this.next);
             this.grandParent.appendChild(nextBox);
         }
@@ -123,7 +128,7 @@ function LbHTMLStructure(settings) {
         //previous photo button
         this.prev = this.createEl("img", "back.png", "Previous image", "prev");
         if(settings.shadows) {
-            var prevBox = this.createEl("div", "", "", "prev_box");
+            let prevBox = this.createEl("div", "", "", "prev_box");
             prevBox.appendChild(this.prev);
             this.grandParent.appendChild(prevBox);
         }
@@ -140,7 +145,7 @@ function LbHTMLStructure(settings) {
         this.link.appendChild(downImg);
 
         if(settings.shadows) {
-            var buttBox = this.createEl("div", "", "", "butt_box");
+            let buttBox = this.createEl("div", "", "", "butt_box");
             buttBox.appendChild(this.cross);
             buttBox.appendChild(this.link);
             this.grandParent.appendChild(buttBox);
@@ -156,7 +161,7 @@ function LbHTMLStructure(settings) {
      * @note Grandparent element must be created first
      */
     this.createInfo = function() {
-        var info = this.createEl("div", "", "", "info");
+        let info = this.createEl("div", "", "", "info");
         this.grandParent.appendChild(info); 
 
         if(this.settings.captions) {
@@ -181,21 +186,21 @@ function LbHTMLStructure(settings) {
         this.photo.addEventListener("load", () => {this.hideLoader(50);});
 
         //Just dummy obj. to eliminate bug, when non-existing photo is  still loading and loading
-        var empty = new Image(); 
+        let empty = new Image(); 
         empty.src = "images/back.png";
         this.updateImage(empty);
         this.photo.addEventListener("error", () => {this.hideLoader(50);}); //<= err handling func.
 
-        var nOfLoaderParts = 3;
+        let nOfLoaderParts = 3;
 
-        for(var i = 0; i < nOfLoaderParts; i++) {
-            var newPart = this.createEl("div", "", "", "p" + i);
+        for(let i = 0; i < nOfLoaderParts; i++) {
+            let newPart = this.createEl("div", "", "", "p" + i);
             newPart.className = "part";
             newPart.style.animationDelay = i*2 + "s";
             this.loader.appendChild(newPart);
         }
 
-        var titleCont = this.createEl("div", "", "", "title_cont");
+        let titleCont = this.createEl("div", "", "", "title_cont");
         titleCont.innerHTML = "Loading...";
         this.loader.appendChild(titleCont);
     }
@@ -227,7 +232,7 @@ function LbHTMLStructure(settings) {
      * @returns object with created element
      */
     this.createEl = function(type, bg, title, id) {
-        var newEl = document.createElement(type);
+        let newEl = document.createElement(type);
 
         if(bg != "") {
             newEl.src = this.settings.imagesDir + bg;
@@ -291,9 +296,9 @@ function LbHTMLStructure(settings) {
     this.updateImage = function(imageObject) {
 
         this.showLoader();
-
-        var newImSrc = imageObject.src;
-        var origImSrc;
+        this.rotatePhoto(cv=true, def=true);
+        let newImSrc = imageObject.src;
+        let origImSrc;
 
         if((origImSrc = this.findOriginalImage(imageObject)) !== null) {
             newImSrc = origImSrc;
@@ -313,13 +318,13 @@ function LbHTMLStructure(settings) {
      * in this case is used name of thumbnail for original image and rest of path from "data-orig"
      */
     this.findOriginalImage = function(imageObject) {
-        var pathToOrig = imageObject.getAttribute("data-orig");
+        let pathToOrig = imageObject.getAttribute("data-orig");
 
         if(pathToOrig !== null) {
-            var pathTail = getFilenameFromPath(pathToOrig);
+            let pathTail = getFilenameFromPath(pathToOrig);
 
             if(pathTail == "*" || pathTail == "") {
-                var origDirectory = pathToOrig.substr(0, pathToOrig.length - 1);
+                let origDirectory = pathToOrig.substr(0, pathToOrig.length - 1);
 
                 return origDirectory + getFilenameFromPath(imageObject.src);
             }
@@ -337,7 +342,7 @@ function LbHTMLStructure(settings) {
      */
     this.updateCaption = function(imageObject) {
         if(this.caption !== null) {
-            var captionContent = imageObject.getAttribute("data-caption");
+            let captionContent = imageObject.getAttribute("data-caption");
 
             if(captionContent !== null) {
                 this.caption.innerHTML = captionContent;
@@ -356,7 +361,7 @@ function LbHTMLStructure(settings) {
     this.updateNumber = function(curImIndex, totalImNumber) {
         if(this.number !== null) {
             if(totalImNumber > 1) {
-                var orderNumOfIm = curImIndex + 1;
+                let orderNumOfIm = curImIndex + 1;
 
                 this.number.innerHTML = orderNumOfIm + "/" + totalImNumber;
             }
@@ -427,9 +432,9 @@ function LbHTMLStructure(settings) {
      * @param {*} buttonObj button that should be lighten
      */
     this.lightenButton = function(buttonObj) {
-        var threshForExecution = 0.55;
+        let threshForExecution = 0.55;
 
-        var isVisible = $(buttonObj).css("display") != "none";
+        let isVisible = $(buttonObj).css("display") != "none";
         isVisible = isVisible && $(buttonObj).css("visibility") != "hidden";
 
         if(isVisible) {
@@ -438,6 +443,68 @@ function LbHTMLStructure(settings) {
             }
         }
     }
+
+    /**
+     * Rotates main image about 90degrees (it doesn't save last state of image!)
+     * @param {*} cv specifies direction of rotation (true => cv, false => ccv)
+     * @param {*} def if it is true image is rotated to deafult position (0°)
+     */
+
+    this.rotatePhoto = function(cv = true, def = false) {
+        if(def) {
+            $(this.photo).css("transform", "translate(-50%,-50%)");
+        }
+        else {
+            let CSSMatrix = $(this.photo).css("transform");
+            let transformationMatrix = CSSMatrixTo2DMat(CSSMatrix);
+            let degCurOfRotation = rad2deg(getRadOfRotation(transformationMatrix));
+            newRotAngle = Math.round(degCurOfRotation) + (cv ? 90 : -90);
+
+            $(this.photo).css("transform", "translate(-50%,-50%) rotate(" + newRotAngle + "deg)");
+        }    
+    }
+
+    /**
+     * Converts form of mtrix, that return JQuery .css("transform") method to more clear form
+     * @param {*} CSSMatrix input CSS matrix (e. g. "matrix(1, 0, 0, 1, 0, 0)"")
+     * @returns converted CSS matrix to 2D array
+     */
+    function CSSMatrixTo2DMat(CSSMatrix) {
+        let numOfValues = 4;
+        let valuesStr = CSSMatrix.substring(CSSMatrix.indexOf("(") + 1, CSSMatrix.indexOf(")"));
+        let valuesArr = valuesStr.split(", ", numOfValues), resMatrix = [[],[]];
+
+        for(let i = 0; i < valuesArr.length; i++) {
+            resMatrix[(i > 1) ? 1 : 0][i % 2] = parseFloat(valuesArr[i]);
+        }
+
+        return resMatrix;
+    }
+
+    /**
+     * Calculates angle of rotation of objectin radians
+     * @param {*} posMatrix transformation matrix (2d Array) describing position of object
+     * @warning there will be probably some inaccuracy caused by flaoting point arithmetics
+     * @returns result of calculation in radians, in interval <0°, 360°)
+     */
+    function getRadOfRotation(posMatrix) {
+        if(posMatrix[0][1] >= 0) {
+            return Math.acos(posMatrix[0][0]);
+        }
+        else if(posMatrix[0][1] <= 0) {
+            return Math.acos(-posMatrix[0][0]) + Math.PI;
+        }
+    }
+
+    /**
+     * Converts radians to degrees
+     * @param {*} radians float that describes angle of rotation through radians
+     * @returns float, that represents angle of rotation in degrees 
+     */
+    function rad2deg(radians) {
+        return (radians/Math.PI)*180;
+    }
+
 }
 
 /**
@@ -451,8 +518,8 @@ function GaleriesCreator() {
      * @returns array of galeries
      */
     this.getGals = function(mainClassName) {
-        var imgs = [];
-        var currentGalery = null, selected, currentClassName, lastClassName;
+        let imgs = [];
+        let currentGalery = null, selected, currentClassName, lastClassName;
 
         selected = selectLbImages(mainClassName);
 
@@ -499,8 +566,8 @@ function GaleriesCreator() {
      * @returns 
      */
     function getFirstSubclassName(element, mainClassName) {
-        var wholeClassName, mainClassEndWithGap, subclassStart, nextGapIndex;
-        var result = null;
+        let wholeClassName, mainClassEndWithGap, subclassStart, nextGapIndex;
+        let result = null;
 
         wholeClassName = element.className;
         mainClassEndWithGap = wholeClassName.indexOf(mainClassName + " ", 0);
@@ -555,9 +622,9 @@ function Lightbox(arrOfGaleries) {
      * Loads next photo in current galery (when it is last photo go to start)
      */
     this.next = function() {
-        var curGalLength = this.retCurGalLength();
+        let curGalLength = this.retCurGalLength();
 
-        var isLastPhoto = (this.curIm == curGalLength - 1);
+        let isLastPhoto = (this.curIm == curGalLength - 1);
         if(!this.frame.settings.loop && isLastPhoto) {
             return;
         }
@@ -578,9 +645,9 @@ function Lightbox(arrOfGaleries) {
      * Loads previous photo in current galery
      */
     this.prev = function() {
-        var curGalLength = this.retCurGalLength();
+        let curGalLength = this.retCurGalLength();
 
-        var isFirstPhoto = (this.curIm == 0);
+        let isFirstPhoto = (this.curIm == 0);
         if(!this.frame.settings.loop && isFirstPhoto) {
             return;
         }
@@ -602,15 +669,15 @@ function Lightbox(arrOfGaleries) {
      * @param {*} click event object
      */
     this.lbClose = function(click) {
-        var clickedEl = click.target, lbFrame = this.frame;
+        let clickedEl = click.target, lbFrame = this.frame;
         
-        var elements = [];
+        let elements = [];
         while(clickedEl !== null) {
             elements.push(clickedEl);
             clickedEl = clickedEl.parentElement;
         }
         
-        var exceptions = [lbFrame.photo, lbFrame.next, 
+        let exceptions = [lbFrame.photo, lbFrame.next, 
                         lbFrame.prev, lbFrame.link, 
                         lbFrame.caption, lbFrame.number];
 
@@ -666,7 +733,7 @@ function Lightbox(arrOfGaleries) {
      * Preloads source image of next and previous images
      */
     this.preload = function() {
-        var nextIm, prevIm;
+        let nextIm, prevIm;
 
         nextIm = new Image();
         prevIm = new Image();
@@ -680,7 +747,7 @@ function Lightbox(arrOfGaleries) {
      * @return image object of image in cur galery on index curIm + diff
      */
     this.getCurImNeighbour = function(diff) {
-        var curGalLen = this.retCurGalLength(), resIndex;
+        let curGalLen = this.retCurGalLength(), resIndex;
         diff = diff % curGalLen;;
 
         if(this.curIm + diff >= curGalLen) {
@@ -707,6 +774,9 @@ function Lightbox(arrOfGaleries) {
      * Adds corresponding event
      */
     this.bindKeys = function() {
+        $(document).keyup((ev) => {
+            this.keyboardBlocked = false;
+        });
 
         $(document).keydown((keyPressed) => {
             this.keyHandler(keyPressed); 
@@ -721,9 +791,10 @@ function Lightbox(arrOfGaleries) {
 
         if(lbIsVisible && !this.keyboardBlocked) {
             this.keyboardBlocked = true;
-            setTimeout(() => {this.keyboardBlocked = false;}, 50);
+            let blocker = setTimeout(() => {this.keyboardBlocked = false;}, 50);
 
-            switch(key.code || key.which) {
+            console.log(key.code);
+            switch(key.code) {
                 case "ArrowLeft":
                     this.frame.lightenButton(this.frame.prev);
                     this.prev();
@@ -735,6 +806,16 @@ function Lightbox(arrOfGaleries) {
                 case "Escape":
                     this.frame.lightenButton(this.frame.cross);
                     this.frame.hideFrame();
+                    break;
+                case "KeyL":
+                    this.frame.rotatePhoto(cv = true);
+                    break;
+                case "KeyR":
+                    this.frame.rotatePhoto(cv = false);
+                    break;
+                case "ControlRight":
+                case "ControlLeft":
+                    clearTimeout(blocker);
                     break;
             }
         }
