@@ -8,6 +8,7 @@
  *                            to divide it into object prototypes and "main" part, but in this
  *                            case it is more complicated for non-power user to add simpleLB 
  *                            to his webpage)
+ * 
  *********************************************************************************************** */
 
 $(document).ready(() => {
@@ -77,6 +78,57 @@ function LbHTMLStructure(settings) {
         this.createInfo();
 
         this.createLoader();
+
+        this.grandParent.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            this.scalePhoto(this.photo.scale - e.deltaY*0.01);
+        });
+
+        this.photo.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            this.photo.moveActivated = true;
+            this.photo.start[0] = Math.round((e.clientX/this.grandParent.clientWidth)*10000)/100;
+            this.photo.start[1] = Math.round((e.clientY/this.grandParent.clientHeight)*10000)/100;
+            $(this.photo).css("cursor", "grabbing");
+            $(this.photo).css("transition", "none");
+        });
+
+        this.grandParent.addEventListener("mouseup", () => {
+            this.photo.moveActivated = false;
+            $(this.photo).css("cursor", "");
+            $(this.photo).css("transition", "");
+        });
+
+        this.grandParent.addEventListener("mousemove", (e) => {
+            if(this.photo.moveActivated) {
+                let lbWidth = this.grandParent.clientWidth;
+                let lbHeight = this.grandParent.clientHeight;
+                let curPosXPerc = Math.round((e.clientX/lbWidth)*10000)/100;
+                let curPosYPerc = Math.round((e.clientY/lbHeight)*10000)/100;
+
+                let newPosX = this.photo.lastPos[0] + curPosXPerc - this.photo.start[0];
+                let newPosY = this.photo.lastPos[1] + curPosYPerc - this.photo.start[1];
+                let rect = this.photo.getBoundingClientRect();
+            
+                let edgeSize = 100;
+                let newPosPxX = newPosX*lbWidth/100;
+                let newPosPxY = newPosY*lbHeight/100;
+
+                let isInsideWindow = newPosPxX - rect.width/2 - edgeSize < 0 &&
+                                     newPosPxY - rect.height/2 - edgeSize/2 < 0;
+
+                isInsideWindow = isInsideWindow && newPosPxX + rect.width/2 + edgeSize > lbWidth &&
+                                                   newPosPxY + rect.height/2 + edgeSize/2 > lbHeight;
+                                    
+                if(isInsideWindow) {
+                    this.translatePhoto(newPosX, newPosY);
+
+                    this.photo.start[0] = curPosXPerc;
+                    this.photo.start[1] = curPosYPerc;
+                }
+            }
+        });
+
     }
 
     /**
@@ -84,13 +136,21 @@ function LbHTMLStructure(settings) {
      * @note needs grandparent element to be created first
      */
     this.createPhotoEl = function() {
-        this.photo = this.createEl("img", "", "Photo", "main_img");
+        this.photo = this.createEl("img", "", "Photo", "main_photo");
         this.photo.loading = "lazy";
         this.photo.alt = "Something went wrong with your image...\
                           Try to check the path to the image and if it exists...";
 
         this.photo.style.maxHeight = settings.maxHeight;
         this.photo.style.maxWidth = settings.maxWidth;
+
+        this.photo.rotAngle = 0.0;
+        this.photo.scale = 1;
+        this.photo.start = [50, 50]; 
+        this.photo.lastPos = [50, 50];
+        this.photo.moveActivated = false;
+        this.photo.posX = 0;
+        this.photo.posY = 0;
 
         this.grandParent.appendChild(this.photo);
     }
@@ -296,7 +356,7 @@ function LbHTMLStructure(settings) {
     this.updateImage = function(imageObject) {
 
         this.showLoader();
-        this.rotatePhoto(cv=true, def=true);
+        this.phTransformToDefault();
         let newImSrc = imageObject.src;
         let origImSrc;
 
@@ -445,66 +505,61 @@ function LbHTMLStructure(settings) {
     }
 
     /**
-     * Rotates main image about 90degrees (it doesn't save last state of image!)
-     * @param {*} cv specifies direction of rotation (true => cv, false => ccv)
-     * @param {*} def if it is true image is rotated to deafult position (0°)
+     * Remove transform property from style attribute of main photo element
      */
-
-    this.rotatePhoto = function(cv = true, def = false) {
-        if(def) {
-            $(this.photo).css("transform", "translate(-50%,-50%)");
-        }
-        else {
-            let CSSMatrix = $(this.photo).css("transform");
-            let transformationMatrix = CSSMatrixTo2DMat(CSSMatrix);
-            let degCurOfRotation = rad2deg(getRadOfRotation(transformationMatrix));
-            newRotAngle = Math.round(degCurOfRotation) + (cv ? 90 : -90);
-
-            $(this.photo).css("transform", "translate(-50%,-50%) rotate(" + newRotAngle + "deg)");
-        }    
+    this.phTransformToDefault = function() {
+        this.rotatePhoto();
+        this.scalePhoto();
+        this.translatePhoto();
+        $(this.photo).css("transform", "");
     }
 
     /**
-     * Converts form of mtrix, that return JQuery .css("transform") method to more clear form
-     * @param {*} CSSMatrix input CSS matrix (e. g. "matrix(1, 0, 0, 1, 0, 0)"")
-     * @returns converted CSS matrix to 2D array
+     * Sets rotation of image to angle from argument
+     * @param {*} angle angle of rotation
      */
-    function CSSMatrixTo2DMat(CSSMatrix) {
-        let numOfValues = 4;
-        let valuesStr = CSSMatrix.substring(CSSMatrix.indexOf("(") + 1, CSSMatrix.indexOf(")"));
-        let valuesArr = valuesStr.split(", ", numOfValues), resMatrix = [[],[]];
+    this.rotatePhoto = function(angle = 0) {
+        let scaling = "scale(" + this.photo.scale + ")";
+    
+        let newAngle = angle % 360;
 
-        for(let i = 0; i < valuesArr.length; i++) {
-            resMatrix[(i > 1) ? 1 : 0][i % 2] = parseFloat(valuesArr[i]);
-        }
+        let transformation = "translate(-50%, -50%) rotate(" + newAngle + "deg) " + scaling;
+        this.photo.rotAngle = newAngle;
 
-        return resMatrix;
+        $(this.photo).css("transform", transformation);
     }
 
     /**
-     * Calculates angle of rotation of objectin radians
-     * @param {*} posMatrix transformation matrix (2d Array) describing position of object
-     * @warning there will be probably some inaccuracy caused by flaoting point arithmetics
-     * @returns result of calculation in radians, in interval <0°, 360°)
+     * Sets scale (zoom) of image to scaleF from argument
+     * @param {*} scaleF scale factor
+     * @note scale factor is cropped to interval <0.1, 10>
      */
-    function getRadOfRotation(posMatrix) {
-        if(posMatrix[0][1] >= 0) {
-            return Math.acos(posMatrix[0][0]);
+    this.scalePhoto = function(scaleF = 1) {
+        let rotation = "rotate(" + this.photo.rotAngle + "deg)";
+
+        let maxScale = 10, minScale = 0.1;
+        let croppedScaleF = Math.min(Math.max(scaleF, minScale), maxScale);
+
+        let transformation = "translate(-50%, -50%) " + rotation + " scale(" + croppedScaleF + ")";
+        this.photo.scale = croppedScaleF;
+
+        let rect = this.photo.getBoundingClientRect();
+        console.log(rect.height, this.grandParent.clientHeight);
+        if(rect.height < this.grandParent.clientHeight &&
+           rect.width< this.grandParent.clientWidth) {
+            this.translatePhoto();
         }
-        else if(posMatrix[0][1] <= 0) {
-            return Math.acos(-posMatrix[0][0]) + Math.PI;
-        }
+
+        $(this.photo).css("transform", transformation);
     }
 
-    /**
-     * Converts radians to degrees
-     * @param {*} radians float that describes angle of rotation through radians
-     * @returns float, that represents angle of rotation in degrees 
-     */
-    function rad2deg(radians) {
-        return (radians/Math.PI)*180;
-    }
+    this.translatePhoto = function(x = 50, y = 50) {
+        $(this.photo).css("top", y + "%");
+        $(this.photo).css("left", x + "%");
 
+        this.photo.lastPos[0] = x;
+        this.photo.lastPos[1] = y;
+    }
 }
 
 /**
@@ -793,7 +848,6 @@ function Lightbox(arrOfGaleries) {
             this.keyboardBlocked = true;
             let blocker = setTimeout(() => {this.keyboardBlocked = false;}, 50);
 
-            console.log(key.code);
             switch(key.code) {
                 case "ArrowLeft":
                     this.frame.lightenButton(this.frame.prev);
@@ -808,10 +862,20 @@ function Lightbox(arrOfGaleries) {
                     this.frame.hideFrame();
                     break;
                 case "KeyL":
-                    this.frame.rotatePhoto(cv = true);
+                    this.frame.rotatePhoto(this.frame.photo.rotAngle + 90);
+                    this.keyboardBlocked = false;
                     break;
                 case "KeyR":
-                    this.frame.rotatePhoto(cv = false);
+                    this.frame.rotatePhoto(this.frame.photo.rotAngle - 90);
+                    this.keyboardBlocked = false;
+                    break;
+                case "NumpadAdd":
+                    this.frame.scalePhoto(this.frame.photo.scale + 0.1);
+                    this.keyboardBlocked = false;
+                    break;
+                case "NumpadSubtract":
+                    this.frame.scalePhoto(this.frame.photo.scale - 0.1);
+                    this.keyboardBlocked = false;
                     break;
                 case "ControlRight":
                 case "ControlLeft":

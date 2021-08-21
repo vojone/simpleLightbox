@@ -17,7 +17,7 @@
     overflow: hidden;
 }
 
-#lb_cont #main_img {
+#lb_cont #main_photo {
     margin: 0;
     position: absolute;
     top: 50%;
@@ -28,6 +28,8 @@
 
     color: white;
     font-family: Verdana;
+
+    transition: left 0.3s, top 0.3s;
 }
 
 /* Buttons in right top corner */
