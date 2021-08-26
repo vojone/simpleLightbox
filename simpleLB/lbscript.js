@@ -12,18 +12,21 @@
  *********************************************************************************************** */
 
 $(document).ready(() => {
-    lbHtml = new LbHTMLStructure(settings);
-    lbHtml.prepare();
+    lbHTML = new LbHTMLStructure(settings);
+    lbHTML.prepare();
 
     galCreator = new GaleriesCreator();
+    lightbox = new Lightbox(galCreator.getGals("lb"), lbHTML);
 
-    lightbox = new Lightbox(galCreator.getGals("lb"));
-
-    lightbox.bindFrame(lbHtml);
-    lightbox.addOnClick();
+    controls = new Controls(settings, lbHTML, lightbox);
+    controls.addButtonEvents();
 
     if(settings.keyboardEnable) {
-        lightbox.bindKeys();
+        controls.bindKeys();
+    }
+
+    if(settings.cTransByMouse) {
+        controls.bindMouse();
     }
 });
 
@@ -49,6 +52,7 @@ function Galery(name, photo) {
  */
 function LbHTMLStructure(settings) {
     this.settings = settings;
+    this.transformer = null;
 
     this.grandParent = null;
     this.photo = null;
@@ -73,61 +77,13 @@ function LbHTMLStructure(settings) {
 
         document.getElementsByTagName("html")[0].appendChild(this.grandParent);
 
-        this.createPhotoEl();
+        this.createPhoto();
+
+        this.transformer = new PhotoTransformer(this.photo);
+
         this.createButtons();
         this.createInfo();
-
         this.createLoader();
-
-        this.grandParent.addEventListener("wheel", (e) => {
-            e.preventDefault();
-            this.scalePhoto(this.photo.scale - e.deltaY*0.01);
-        });
-
-        this.photo.addEventListener("mousedown", (e) => {
-            e.preventDefault();
-            this.photo.moveActivated = true;
-            this.photo.start[0] = Math.round((e.clientX/this.grandParent.clientWidth)*10000)/100;
-            this.photo.start[1] = Math.round((e.clientY/this.grandParent.clientHeight)*10000)/100;
-            $(this.photo).css("cursor", "grabbing");
-            $(this.photo).css("transition", "none");
-        });
-
-        this.grandParent.addEventListener("mouseup", () => {
-            this.photo.moveActivated = false;
-            $(this.photo).css("cursor", "");
-            $(this.photo).css("transition", "");
-        });
-
-        this.grandParent.addEventListener("mousemove", (e) => {
-            if(this.photo.moveActivated) {
-                let lbWidth = this.grandParent.clientWidth;
-                let lbHeight = this.grandParent.clientHeight;
-                let curPosXPerc = Math.round((e.clientX/lbWidth)*10000)/100;
-                let curPosYPerc = Math.round((e.clientY/lbHeight)*10000)/100;
-
-                let newPosX = this.photo.lastPos[0] + curPosXPerc - this.photo.start[0];
-                let newPosY = this.photo.lastPos[1] + curPosYPerc - this.photo.start[1];
-                let rect = this.photo.getBoundingClientRect();
-            
-                let edgeSize = 100;
-                let newPosPxX = newPosX*lbWidth/100;
-                let newPosPxY = newPosY*lbHeight/100;
-
-                let isInsideWindow = newPosPxX - rect.width/2 - edgeSize < 0 &&
-                                     newPosPxY - rect.height/2 - edgeSize/2 < 0;
-
-                isInsideWindow = isInsideWindow && newPosPxX + rect.width/2 + edgeSize > lbWidth &&
-                                                   newPosPxY + rect.height/2 + edgeSize/2 > lbHeight;
-                                    
-                if(isInsideWindow) {
-                    this.translatePhoto(newPosX, newPosY);
-
-                    this.photo.start[0] = curPosXPerc;
-                    this.photo.start[1] = curPosYPerc;
-                }
-            }
-        });
 
     }
 
@@ -135,7 +91,7 @@ function LbHTMLStructure(settings) {
      * Creates main element, which shows photo to user
      * @note needs grandparent element to be created first
      */
-    this.createPhotoEl = function() {
+    this.createPhoto = function() {
         this.photo = this.createEl("img", "", "Photo", "main_photo");
         this.photo.loading = "lazy";
         this.photo.alt = "Something went wrong with your image...\
@@ -143,14 +99,6 @@ function LbHTMLStructure(settings) {
 
         this.photo.style.maxHeight = settings.maxHeight;
         this.photo.style.maxWidth = settings.maxWidth;
-
-        this.photo.rotAngle = 0.0;
-        this.photo.scale = 1;
-        this.photo.start = [50, 50]; 
-        this.photo.lastPos = [50, 50];
-        this.photo.moveActivated = false;
-        this.photo.posX = 0;
-        this.photo.posY = 0;
 
         this.grandParent.appendChild(this.photo);
     }
@@ -356,7 +304,7 @@ function LbHTMLStructure(settings) {
     this.updateImage = function(imageObject) {
 
         this.showLoader();
-        this.phTransformToDefault();
+        this.transformer.transformToDefault();
         let newImSrc = imageObject.src;
         let origImSrc;
 
@@ -503,30 +451,33 @@ function LbHTMLStructure(settings) {
             }
         }
     }
+}
+
+/**
+ * Transforms photo
+ * @param {*} photo object of photo that will be target for all transformations
+ */
+function PhotoTransformer(photo) {
+    this.targetPhoto = photo;
+    this.defScale = 1;
+    this.defPos = [50, 50]; //in %
+    this.defRotation = 0; //deg
+
+    this.curPos = [this.defPos[0], this.defPos[1]];
+    this.curAngle = this.defRotation;
+    this.curScale = this.defScale;
 
     /**
-     * Remove transform property from style attribute of main photo element
+     * Puts photo to new position x, y 
+     * @param {*} x new x position of photo on the screen (in percents of parent elements width)
+     * @param {*} y new y position of photo on the screen (in percents of parent elements height)
      */
-    this.phTransformToDefault = function() {
-        this.rotatePhoto();
-        this.scalePhoto();
-        this.translatePhoto();
-        $(this.photo).css("transform", "");
-    }
+    this.translate = function(x = this.defPos[0], y = this.defPos[1]) {
+        $(this.targetPhoto).css("top", y + "%");
+        $(this.targetPhoto).css("left", x + "%");
 
-    /**
-     * Sets rotation of image to angle from argument
-     * @param {*} angle angle of rotation
-     */
-    this.rotatePhoto = function(angle = 0) {
-        let scaling = "scale(" + this.photo.scale + ")";
-    
-        let newAngle = angle % 360;
-
-        let transformation = "translate(-50%, -50%) rotate(" + newAngle + "deg) " + scaling;
-        this.photo.rotAngle = newAngle;
-
-        $(this.photo).css("transform", transformation);
+        this.curPos[0] = x;
+        this.curPos[1] = y;
     }
 
     /**
@@ -534,31 +485,54 @@ function LbHTMLStructure(settings) {
      * @param {*} scaleF scale factor
      * @note scale factor is cropped to interval <0.1, 10>
      */
-    this.scalePhoto = function(scaleF = 1) {
-        let rotation = "rotate(" + this.photo.rotAngle + "deg)";
+    this.scale = function(scaleF = this.defScale) {
+        let rotation = "rotate(" + this.curAngle + "deg)";
 
         let maxScale = 10, minScale = 0.1;
         let croppedScaleF = Math.min(Math.max(scaleF, minScale), maxScale);
 
         let transformation = "translate(-50%, -50%) " + rotation + " scale(" + croppedScaleF + ")";
-        this.photo.scale = croppedScaleF;
+        this.curScale = croppedScaleF;
 
-        let rect = this.photo.getBoundingClientRect();
-        console.log(rect.height, this.grandParent.clientHeight);
-        if(rect.height < this.grandParent.clientHeight &&
-           rect.width< this.grandParent.clientWidth) {
-            this.translatePhoto();
-        }
+        this.centerSmallImage();
 
-        $(this.photo).css("transform", transformation);
+        $(this.targetPhoto).css("transform", transformation);
     }
 
-    this.translatePhoto = function(x = 50, y = 50) {
-        $(this.photo).css("top", y + "%");
-        $(this.photo).css("left", x + "%");
+    /**
+     * Sets rotation of image to angle from argument
+     * @param {*} angle angle of rotation
+     */
+     this.rotate = function(angle = this.defRotation) {
+        let scaling = "scale(" + this.curScale + ")";
+    
+        let newAngle = angle % 360;
 
-        this.photo.lastPos[0] = x;
-        this.photo.lastPos[1] = y;
+        let transformation = "translate(-50%, -50%) rotate(" + newAngle + "deg) " + scaling;
+        this.curAngle = newAngle;
+
+        $(this.targetPhoto).css("transform", transformation);
+    }
+
+    /**
+     * Puts main photo to the center of the screen (if pohoto is smaller than screen)
+     */
+     this.centerSmallImage = function() {
+        let rect = this.targetPhoto.getBoundingClientRect();
+        
+        if(rect.height < window.innerHeight && rect.width < window.innerWidth) {
+            this.translate();
+        }
+    }
+
+    /**
+     * Remove transform property from style attribute of main photo element
+     */
+     this.transformToDefault = function() {
+        this.rotate();
+        this.scale();
+        this.translate();
+        $(this.photo).css("transform", "");
     }
 }
 
@@ -647,27 +621,13 @@ function GaleriesCreator() {
 /**
  * "Main" object, which holds the current position and changes it
  * @param {*} arrOfGaleries array of galeries that should be showed in lightbox
+ * @param {*} HTMLStruct specific hierarchy of elements that will show the galeries on webpage
  */
-function Lightbox(arrOfGaleries) {
+function Lightbox(arrOfGaleries, HTMLStruct) {
     this.galeries = arrOfGaleries;
     this.curIm = 0;
     this.curGal = 0;
-    this.frame = null;
-    this.keyboardBlocked = false;
-
-    /**
-     * Binds corresponding HTML structure to this object and sets src of main photo to first image
-     * @param {*} HTMLStruct created HTML structure
-     */
-    this.bindFrame = function(HTMLStruct) {
-        this.frame = HTMLStruct;
-
-        this.frame.next.addEventListener("click", () => {this.next();});
-        this.frame.prev.addEventListener("click", () => {this.prev();});
-        this.frame.cross.addEventListener("click", () => {this.frame.hideFrame();});
-        
-        this.frame.grandParent.addEventListener("click", (target) => {this.lbClose(target);});
-    }
+    this.frame = HTMLStruct;
 
     this.retCurGalLength = function() {
         return this.galeries[this.curGal].imgs.length;
@@ -721,10 +681,10 @@ function Lightbox(arrOfGaleries) {
 
     /**
      * His window with lb when user clicks somewhere out of photo and buttons
-     * @param {*} click event object
+     * @param {*} clickTarget object that was clicked by user
      */
-    this.lbClose = function(click) {
-        let clickedEl = click.target, lbFrame = this.frame;
+    this.lbClose = function(clickTarget) {
+        let clickedEl = clickTarget, lbFrame = this.frame;
         
         let elements = [];
         while(clickedEl !== null) {
@@ -744,19 +704,6 @@ function Lightbox(arrOfGaleries) {
         }
 
         lbFrame.hideFrame();
-    }
-
-    /**
-     * Adds click event listener in proper form (with a specific arguments)
-     */
-    this.addOnClick =  function() {
-        for(let i = 0; this.galeries[i] != null; i++) {
-            for(let u = 0; this.galeries[i].imgs[u] != null; u++) {
-                eval("this.galeries[i].imgs[u].addEventListener(\"click\", () => { \
-                        this.showAt( + " + i + ", " + u + "); \
-                    });");
-            }
-        }
     }
 
     /**
@@ -825,11 +772,47 @@ function Lightbox(arrOfGaleries) {
         return this.galeries[this.curGal].imgs[this.curIm];
     }
 
+}
+
+/**
+ * Adds all necessary events to control lightbox by mouse and keyboard
+ * @param {*} settings settings object with configuration
+ * @param {*} frame HTML structure to be controled
+ * @param {*} lightbox lightbox object to be controled
+ */
+function Controls(settings, frame, lightbox) {
+    this.settings = settings;
+    this.frame = frame;
+    this.lb = lightbox;
+
+    this.keyboardBlocked = false;
+    this.transStart = [this.frame.transformer.curPos[0], this.frame.transformer.curPos[1]];
+    this.moveActivated = false;
+
+    /**
+     * Adds click event listener to buttons  in proper form (with a specific arguments)
+     */
+     this.addButtonEvents =  function() {
+        this.frame.next.addEventListener("click", () => {this.lb.next();});
+        this.frame.prev.addEventListener("click", () => {this.lb.prev();});
+        this.frame.cross.addEventListener("click", () => {this.frame.hideFrame();});
+        
+        this.frame.grandParent.addEventListener("click", (e) => {this.lb.lbClose(e.target);});
+
+        for(let i = 0; this.lb.galeries[i] != null; i++) {
+            for(let u = 0; this.lb.galeries[i].imgs[u] != null; u++) {
+                eval("this.lb.galeries[i].imgs[u].addEventListener(\"click\", () => { \
+                        this.lb.showAt( + " + i + ", " + u + "); \
+                    });");
+            }
+        }
+    }
+
     /**
      * Adds corresponding event
      */
-    this.bindKeys = function() {
-        $(document).keyup((ev) => {
+     this.bindKeys = function() {
+        $(document).keyup(() => {
             this.keyboardBlocked = false;
         });
 
@@ -841,50 +824,167 @@ function Lightbox(arrOfGaleries) {
     /**
      * Solves pressed key
      */ 
-    this.keyHandler = function(key) {
-        lbIsVisible = this.frame.grandParent.style.display != "none";
+     this.keyHandler = function(key) {
+        let lbIsVisible = this.frame.grandParent.style.display != "none";
+        let blocker;
 
         if(lbIsVisible && !this.keyboardBlocked) {
             this.keyboardBlocked = true;
-            let blocker = setTimeout(() => {this.keyboardBlocked = false;}, 50);
+            blocker = setTimeout(() => {this.keyboardBlocked = false;}, 50);
 
-            switch(key.code) {
-                case "ArrowLeft":
-                    this.frame.lightenButton(this.frame.prev);
-                    this.prev();
-                    break;
-                case "ArrowRight":
-                    this.frame.lightenButton(this.frame.next);
-                    this.next();
-                    break;
-                case "Escape":
-                    this.frame.lightenButton(this.frame.cross);
-                    this.frame.hideFrame();
-                    break;
-                case "KeyL":
-                    this.frame.rotatePhoto(this.frame.photo.rotAngle + 90);
-                    this.keyboardBlocked = false;
-                    break;
-                case "KeyR":
-                    this.frame.rotatePhoto(this.frame.photo.rotAngle - 90);
-                    this.keyboardBlocked = false;
-                    break;
-                case "NumpadAdd":
-                    this.frame.scalePhoto(this.frame.photo.scale + 0.1);
-                    this.keyboardBlocked = false;
-                    break;
-                case "NumpadSubtract":
-                    this.frame.scalePhoto(this.frame.photo.scale - 0.1);
-                    this.keyboardBlocked = false;
-                    break;
-                case "ControlRight":
-                case "ControlLeft":
-                    clearTimeout(blocker);
-                    break;
-            }
+        }
+
+        this.basicKeys(key, blocker);
+
+        if(this.settings.transformations) {
+            this.transformKeys(key);
         }
     }
+
+    /**
+     * Runs corresponding function due to pressed key
+     * @param {*} blocker ¨timeout that blocks running other events
+     */
+    this.basicKeys = function(key, blocker) {
+        switch(key.code) {
+            case "ArrowLeft":
+                this.frame.lightenButton(this.frame.prev);
+                this.lb.prev();
+                break;
+            case "ArrowRight":
+                this.frame.lightenButton(this.frame.next);
+                this.lb.next();
+                break;
+            case "Escape":
+                this.frame.lightenButton(this.frame.cross);
+                this.frame.hideFrame();
+                break;
+            case "ControlRight":
+            case "ControlLeft":
+                clearTimeout(blocker);
+                break;
+        }
+    }
+
+    /**
+     * Runs transformation due to pressed key
+     */
+    this.transformKeys = function(key) {
+        switch(key.code) {
+            case "KeyL":
+                this.frame.transformer.rotate(this.frame.transformer.curAngle + 90);
+                this.keyboardBlocked = false;
+                break;
+            case "KeyR":
+                this.frame.transformer.rotate(this.frame.transformer.curAngle - 90);
+                this.keyboardBlocked = false;
+                break;
+            case "NumpadAdd":
+                this.frame.transformer.scale(this.frame.transformer.curScale + 0.1);
+                this.keyboardBlocked = false;
+                break;
+            case "NumpadSubtract":
+                this.frame.transformer.scale(this.frame.transformer.curScale - 0.1);
+                this.keyboardBlocked = false;
+                break;
+        }
+    }
+
+
+    /**
+     * Adds mouse events to control photo transformation
+     */
+    this.bindMouse = function() {
+
+        if(!this.settings.transformations) {
+            return;
+        }
+
+        /**
+         * Zooms photo with wheel
+         */
+        this.frame.grandParent.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            this.frame.transformer.scale(this.frame.transformer.curScale - e.deltaY*0.01);
+        });
+
+        /**
+         * activates grabbing of photo
+         */
+        this.frame.photo.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+
+            this.moveActivated = true;
+
+            let yPerc = e.clientY/this.frame.grandParent.clientHeight;
+            let xPerc = e.clientX/this.frame.grandParent.clientWidth;
+            this.transStart[0] = Math.round(xPerc*10000)/100;
+            this.transStart[1] = Math.round(yPerc*10000)/100;
+
+            $(this.frame.photo).css("cursor", "grabbing");
+            $(this.frame.photo).css("transition", "none");
+        });
+
+        /**
+         * Deactivates grabbing of photo
+         */
+        this.frame.grandParent.addEventListener("mouseup", () => {
+            this.moveActivated = false;
+
+            this.frame.transformer.centerSmallImage();
+
+            $(this.frame.photo).css("cursor", "");
+            $(this.frame.photo).css("transition", "");
+        });
+
+        /**
+         * Grabs photo
+         */
+        this.frame.grandParent.addEventListener("mousemove", (e) => {
+            if(this.moveActivated) {
+                let lbWidth = this.frame.grandParent.clientWidth;
+                let lbHeight = this.frame.grandParent.clientHeight;
+
+                let curPosXPerc = Math.round((e.clientX/lbWidth)*10000)/100;
+                let curPosYPerc = Math.round((e.clientY/lbHeight)*10000)/100;
+
+                let newPosX = this.frame.transformer.curPos[0] + curPosXPerc - this.transStart[0];
+                let newPosY = this.frame.transformer.curPos[1] + curPosYPerc - this.transStart[1];
+
+
+                if(this.isInsideWindow(newPosX*lbWidth/100, newPosY*lbHeight/100)) {
+                    this.frame.transformer.translate(newPosX, newPosY);
+                    this.transStart[0] = curPosXPerc;
+                    this.transStart[1] = curPosYPerc;
+                }
+            }
+        });
+    }
+
+    /**
+     * Checks whether is photo on position posX, posY still inside the window
+     * @param {*} posX position x of image (in pixels)
+     * @param {*} posY position y of image (in pixels)
+     * @param {*} tolerance distance from edge (in px), where can img appears
+     * @returns true if is inside else false
+     */
+    this.isInsideWindow = function(posX, posY, tolerance = 50) {
+        let lbWidth = this.frame.grandParent.clientWidth;
+        let lbHeight = this.frame.grandParent.clientHeight;
+        let rect = this.frame.photo.getBoundingClientRect();
+
+        let isInside = posX - rect.width/2 - tolerance < 0 &&
+                    posY - rect.height/2 - tolerance/2 < 0;
+
+        isInside = isInside && posX + rect.width/2 + tolerance > lbWidth &&
+                posY + rect.height/2 + tolerance/2 > lbHeight;
+                            
+        return isInside;
+    }
+
 }
+
+
 
 
 /***                                     End of lbscript.js                                    ***/
