@@ -28,6 +28,8 @@ $(document).ready(() => {
     if(settings.cTransByMouse) {
         controls.bindMouse();
     }
+
+    lightbox.preloadSpecific();
 });
 
 
@@ -195,7 +197,7 @@ function LbHTMLStructure(settings) {
 
         //Just dummy obj. to eliminate bug, when non-existing photo is  still loading and loading
         let empty = new Image(); 
-        empty.src = "images/back.png";
+        empty.src = this.settings.imagesDir + "back.png";
         this.updateImage(empty);
         this.photo.addEventListener("error", () => {this.hideLoader(50);}); //<= err handling func.
 
@@ -742,6 +744,22 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
 
         nextIm.src = this.frame.findOriginalImage(this.getCurImNeighbour(1));
         prevIm.src = this.frame.findOriginalImage(this.getCurImNeighbour(-1));
+    }
+
+    /**
+     * Preloads specific image showed in LB galery
+     */
+     this.preloadSpecific = function(gal = 0, im = 0) {
+        let curIm = new Image();
+    
+        if(gal >= this.galeries.length || im >= this.galeries[gal].imgs.length) {
+            return false;
+        }
+        else {
+            curIm = this.galeries[gal].imgs[im];
+
+            return true;
+        }
     }
 
     /**
