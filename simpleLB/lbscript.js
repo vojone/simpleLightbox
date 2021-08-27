@@ -63,6 +63,7 @@ function LbHTMLStructure(settings) {
     this.next = null;
     this.prev = null;
     this.cross = null;
+    this.menu = null;
 
     this.caption = null;
     this.number = null;
@@ -124,27 +125,7 @@ function LbHTMLStructure(settings) {
      * @note Grandparent element must be created first
      */
     this.createButtons = function() {
-        //next photo button
-        this.next = this.createEl("img", "next.png", "Next image", "next");
-        if(settings.shadows) {
-            let nextBox = this.createEl("div", "", "", "next_box");
-            nextBox.appendChild(this.next);
-            this.grandParent.appendChild(nextBox);
-        }
-        else {
-            this.grandParent.appendChild(this.next);
-        }
-        
-        //previous photo button
-        this.prev = this.createEl("img", "back.png", "Previous image", "prev");
-        if(settings.shadows) {
-            let prevBox = this.createEl("div", "", "", "prev_box");
-            prevBox.appendChild(this.prev);
-            this.grandParent.appendChild(prevBox);
-        }
-        else {
-            this.grandParent.appendChild(this.prev);
-        }
+        this.createArrows();
 
         //close button 
         this.cross = this.createEl("img", "close.png", "Close galery (Esc)", "cross");
@@ -154,15 +135,107 @@ function LbHTMLStructure(settings) {
         downImg = this.createEl("img", "download.png", "", "download");
         this.link.appendChild(downImg);
 
-        if(settings.shadows) {
+        //Menu
+        this.createMenu();
+
+        if(this.settings.shadows) {
             let buttBox = this.createEl("div", "", "", "butt_box");
             buttBox.appendChild(this.cross);
             buttBox.appendChild(this.link);
+            buttBox.appendChild(this.menu);
             this.grandParent.appendChild(buttBox);
         }
         else {
             this.grandParent.appendChild(this.cross);
             this.grandParent.appendChild(this.link);
+            this.grandParent.appendChild(this.menu);
+        }
+    }
+
+    function setBgImage(object, imageName) {
+        $(object).css("background-image", "url('" + settings.imagesDir + imageName + "')");
+    }
+
+    this.openMenu = function() {
+        $(this.menu).addClass("active");
+
+        if(this.settings.shadows)  {
+            let buttBox = $(this.menu).parents("div").first();
+            buttBox.addClass("active");
+        }
+
+        $(this.menu.menuUl).slideDown("fast");
+    }
+
+    this.closeMenu = function() {
+        $(this.menu.menuUl).slideUp("medium", () => {
+            if(this.settings.shadows)  {
+                let buttBox = $(this.menu).parents("div").first();
+                buttBox.removeClass("active");
+            }
+
+            $(this.menu).removeClass("active");
+        });
+    }
+
+    this.createMenu = function() {
+        this.menu = this.createEl("div", "menu.png", "Menu", "menu");
+        this.menu.menuIconCont = this.createEl("div", "", "", "ico_cont");
+        let menuIcon = this.createEl("img", "menu.png", "Menu", "menu_icon");
+        this.menu.menuIconCont.appendChild(menuIcon);
+        this.menu.appendChild(this.menu.menuIconCont);
+
+        this.menu.menuUl = this.createEl("ul", "", "", "");
+
+        if(this.settings.transformations) {
+            this.menu.reset = this.createEl("li", "", "Reset view", "");
+            this.menu.reset.innerHTML = "Reset view"
+            this.menu.menuUl.appendChild(this.menu.reset);
+
+            this.menu.zoom = this.createEl("li", "", "Zoom", "");
+            this.menu.zoom.zoomIn = this.createEl("div", "", "Zoom IN", "in");
+            setBgImage(this.menu.zoom.zoomIn, "zoomin.png");
+            this.menu.zoom.zoomOut = this.createEl("div", "", "Zoom OUT", "out");
+            setBgImage(this.menu.zoom.zoomOut, "zoomout.png");
+            this.menu.zoom.appendChild(this.menu.zoom.zoomIn);
+            this.menu.zoom.appendChild(this.menu.zoom.zoomOut);
+
+            this.menu.rotation = this.createEl("li", "", "Rotate", "");
+            this.menu.rotation.rotLeft = this.createEl("div", "", "Rotate counterclockwise", "left");
+            setBgImage(this.menu.rotation.rotLeft, "rotate.png");
+            this.menu.rotation.rotRight = this.createEl("div", "", "Rotate clockwise", "right");
+            setBgImage(this.menu.rotation.rotRight, "rotate.png");
+            this.menu.rotation.appendChild(this.menu.rotation.rotLeft);
+            this.menu.rotation.appendChild(this.menu.rotation.rotRight);
+
+            this.menu.menuUl.appendChild(this.menu.zoom);
+            this.menu.menuUl.appendChild(this.menu.rotation);
+            this.menu.appendChild(this.menu.menuUl);
+        }
+    }
+
+
+    this.createArrows = function() {
+        //next photo button
+        this.next = this.createEl("img", "next.png", "Next image", "next");
+        if(this.settings.shadows) {
+            let nextBox = this.createEl("div", "", "", "next_box");
+            nextBox.appendChild(this.next);
+            this.grandParent.appendChild(nextBox);
+        }
+        else {
+            this.grandParent.appendChild(this.next);
+        }
+        
+        //previous photo button
+        this.prev = this.createEl("img", "next.png", "Previous image", "prev");
+        if(this.settings.shadows) {
+            let prevBox = this.createEl("div", "", "", "prev_box");
+            prevBox.appendChild(this.prev);
+            this.grandParent.appendChild(prevBox);
+        }
+        else {
+            this.grandParent.appendChild(this.prev);
         }
     }
 
@@ -682,33 +755,6 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
     }
 
     /**
-     * His window with lb when user clicks somewhere out of photo and buttons
-     * @param {*} clickTarget object that was clicked by user
-     */
-    this.lbClose = function(clickTarget) {
-        let clickedEl = clickTarget, lbFrame = this.frame;
-        
-        let elements = [];
-        while(clickedEl !== null) {
-            elements.push(clickedEl);
-            clickedEl = clickedEl.parentElement;
-        }
-        
-        let exceptions = [lbFrame.photo, lbFrame.next, 
-                        lbFrame.prev, lbFrame.link, 
-                        lbFrame.caption, lbFrame.number];
-
-        //react on everything except of buttons
-        for(let i = 0; exceptions[i] != null; i++) {
-            if(elements.includes(exceptions[i])) {
-                return;
-            }
-        }
-
-        lbFrame.hideFrame();
-    }
-
-    /**
      * Sets current photo to chosen one (can be in any galery) and then show lightbox
      * @param {*} gal index of new position in galery array
      * @param {*} im index of new position in current galery
@@ -804,6 +850,7 @@ function Controls(settings, frame, lightbox) {
     this.lb = lightbox;
 
     this.keyboardBlocked = false;
+    this.ctrlPressed = false;
     this.transStart = [this.frame.transformer.curPos[0], this.frame.transformer.curPos[1]];
     this.moveActivated = false;
 
@@ -814,8 +861,44 @@ function Controls(settings, frame, lightbox) {
         this.frame.next.addEventListener("click", () => {this.lb.next();});
         this.frame.prev.addEventListener("click", () => {this.lb.prev();});
         this.frame.cross.addEventListener("click", () => {this.frame.hideFrame();});
+
+        if(this.settings.transformations) {
+            this.frame.menu.reset.addEventListener("click", () => {
+                this.frame.transformer.transformToDefault();
+            });
+            this.frame.menu.zoom.zoomIn.addEventListener("click", () => {
+                this.frame.transformer.scale(this.frame.transformer.curScale + 0.2);
+            });
+            this.frame.menu.zoom.zoomOut.addEventListener("click", () => {
+                this.frame.transformer.scale(this.frame.transformer.curScale - 0.2);
+            });
+            this.frame.menu.rotation.rotRight.addEventListener("click", () => {
+                this.frame.transformer.rotate(this.frame.transformer.curAngle + 90);
+            });
+            this.frame.menu.rotation.rotLeft.addEventListener("click", () => {
+                this.frame.transformer.rotate(this.frame.transformer.curAngle - 90);
+            });
+        }
+
+        //Toggle menu visibility
+        this.frame.menu.menuIconCont.addEventListener("click", () => {
+            let isClosed = !this.frame.menu.className.includes("active");
+            if(isClosed) {
+                this.frame.openMenu();
+            }
+            else {
+                this.frame.closeMenu();
+            }
+        });
         
-        this.frame.grandParent.addEventListener("click", (e) => {this.lb.lbClose(e.target);});
+        this.frame.grandParent.addEventListener("click", (e) => {
+            if(this.frame.menu.className.includes("active")) {
+                this.menuClose(e.target);
+            }
+            else {
+                this.lbClose(e.target);
+            }
+        });
 
         for(let i = 0; this.lb.galeries[i] != null; i++) {
             for(let u = 0; this.lb.galeries[i].imgs[u] != null; u++) {
@@ -827,14 +910,78 @@ function Controls(settings, frame, lightbox) {
     }
 
     /**
+     * Hides window with lb when user clicks somewhere out of photo and buttons
+     * @param {*} clickTarget object that was clicked by user
+     */
+     this.lbClose = function(clickTarget) {
+        let clickedEl = clickTarget, lbFrame = this.frame;
+        
+        let elements = [];
+        while(clickedEl !== null) {
+            elements.push(clickedEl);
+            clickedEl = clickedEl.parentElement;
+        }
+        
+        let exceptions = [lbFrame.photo, lbFrame.next, 
+                          lbFrame.prev, lbFrame.link, 
+                          lbFrame.caption, lbFrame.number, lbFrame.menu];
+
+        //react on everything except of buttons
+        for(let i = 0; exceptions[i] != null; i++) {
+            if(elements.includes(exceptions[i])) {
+                return;
+            }
+        }
+        
+
+        this.frame.hideFrame();
+    }
+
+    /**
+     * Hides menu when user clicks somewhere out of photo and buttons
+     * @param {*} clickTarget object that was clicked by user
+     */
+     this.menuClose = function(clickTarget) {
+        let clickedEl = clickTarget, lbFrame = this.frame;
+        
+        let elements = [];
+        while(clickedEl !== null) {
+            elements.push(clickedEl);
+            clickedEl = clickedEl.parentElement;
+        }
+        
+        let exceptions = [lbFrame.photo, lbFrame.next, 
+                          lbFrame.prev, lbFrame.link, 
+                          lbFrame.caption, lbFrame.number, lbFrame.menu];
+
+        //react on everything except of buttons
+        for(let i = 0; exceptions[i] != null; i++) {
+            if(elements.includes(exceptions[i])) {
+                return;
+            }
+        }
+        
+
+        lbFrame.closeMenu();
+    }
+
+    /**
      * Adds corresponding event
      */
      this.bindKeys = function() {
-        $(document).keyup(() => {
+        $(document).keyup((keyPressed) => {
             this.keyboardBlocked = false;
+            
+            if(keyPressed.code == "ControlRight" || keyPressed.code == "ControlLeft") {
+                this.ctrlPressed = false;
+            }
         });
 
         $(document).keydown((keyPressed) => {
+            if(keyPressed.code == "ControlRight" || keyPressed.code == "ControlLeft") {
+                this.ctrlPressed = true;
+            }
+
             this.keyHandler(keyPressed); 
         });
     }
@@ -843,17 +990,17 @@ function Controls(settings, frame, lightbox) {
      * Solves pressed key
      */ 
      this.keyHandler = function(key) {
-        let lbIsVisible = this.frame.grandParent.style.display != "none";
-        let blocker;
-
-        if(lbIsVisible && !this.keyboardBlocked) {
-            this.keyboardBlocked = true;
-            blocker = setTimeout(() => {this.keyboardBlocked = false;}, 50);
-
+        if(this.ctrlPressed) {
+            return;
         }
 
-        this.basicKeys(key, blocker);
+        let lbIsVisible = $(this.frame.grandParent).css("display") != "none";
+        if(lbIsVisible && !this.keyboardBlocked) {
+            this.keyboardBlocked = true;
+            setTimeout(() => {this.keyboardBlocked = false;}, 50);
+        }
 
+        this.basicKeys(key);
         if(this.settings.transformations) {
             this.transformKeys(key);
         }
@@ -863,7 +1010,7 @@ function Controls(settings, frame, lightbox) {
      * Runs corresponding function due to pressed key
      * @param {*} blocker ¨timeout that blocks running other events
      */
-    this.basicKeys = function(key, blocker) {
+    this.basicKeys = function(key) {
         switch(key.code) {
             case "ArrowLeft":
                 this.frame.lightenButton(this.frame.prev);
@@ -876,10 +1023,6 @@ function Controls(settings, frame, lightbox) {
             case "Escape":
                 this.frame.lightenButton(this.frame.cross);
                 this.frame.hideFrame();
-                break;
-            case "ControlRight":
-            case "ControlLeft":
-                clearTimeout(blocker);
                 break;
         }
     }
