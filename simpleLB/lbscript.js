@@ -34,7 +34,7 @@ $(document).ready(() => {
 
 
 /**
- * Prototype for galery object that is showed in one coherent presentation
+ * Prototype for galery object that is shown in one coherent view (user needn't to leave lightbox)
  * @param {*} name id for each galery (typically is used name of lb subclass)
  * @param {*} photo first photo, that will be in galery (galery cannsot be empty)
  */
@@ -70,13 +70,13 @@ function LbHTMLStructure(settings) {
     this.loader = null;
 
     /**
-     * Prepares HTML structure for LB presentation
+     * Prepares HTML structure for lightbox
      */
     this.prepare = function() {
         //prepare lb window in background
         this.grandParent = this.createEl("div", "", "", "lb_cont");
         this.grandParent.style.backgroundColor = "rgba(0, 0, 0, " + this.settings.bgAlpha + ")"; 
-        this.grandParent.style.display = "none"; //lb is not showed when page is loaded
+        this.grandParent.style.display = "none"; //lb is not shown when page is loaded
 
         document.getElementsByTagName("html")[0].appendChild(this.grandParent);
 
@@ -121,7 +121,7 @@ function LbHTMLStructure(settings) {
     }
 
     /**
-     * Creates button for presentation
+     * Creates button to control lightbox
      * @note Grandparent element must be created first
      */
     this.createButtons = function() {
@@ -132,30 +132,97 @@ function LbHTMLStructure(settings) {
 
         //downloading button
         this.link = this.createEl("a", "", "Download image", "");
-        downImg = this.createEl("img", "download.png", "", "download");
-        this.link.appendChild(downImg);
+        this.link.downImg = this.createEl("img", "download.png", "", "download");
+        this.link.appendChild(this.link.downImg);
 
         //Menu
         this.createMenu();
 
+        let buttBox = this.createEl("div", "", "", "butt_box");
         if(this.settings.shadows) {
-            let buttBox = this.createEl("div", "", "", "butt_box");
-            buttBox.appendChild(this.cross);
-            buttBox.appendChild(this.link);
-            buttBox.appendChild(this.menu);
-            this.grandParent.appendChild(buttBox);
+            $(buttBox).addClass("shadow");    
         }
-        else {
-            this.grandParent.appendChild(this.cross);
-            this.grandParent.appendChild(this.link);
-            this.grandParent.appendChild(this.menu);
+
+        buttBox.appendChild(this.cross);
+        buttBox.appendChild(this.link);
+        if($(this.menu.menuUl).children().length > 0) { //Add menu, if is not empty
+            buttBox.appendChild(this.menu);
+        }
+
+        this.grandParent.appendChild(buttBox);
+        
+    }
+
+    /**
+     * Creates menu with advance functions
+     */
+     this.createMenu = function() {
+        this.menu = this.createEl("div", "menu.png", "Menu", "menu");
+        this.menu.menuIconCont = this.createEl("div", "", "", "ico_cont");
+        let menuIcon = this.createEl("img", "menu.png", "Menu", "menu_icon");
+        this.menu.menuIconCont.appendChild(menuIcon);
+        this.menu.appendChild(this.menu.menuIconCont);
+
+        this.menu.menuUl = this.createEl("ul", "", "", "");
+
+        if(this.settings.transformations) {
+            this.menu.reset = this.createEl("li", "", "Reset view", "");
+            this.menu.reset.resetV = this.createEl("div", "", "", "res_view");
+            this.menu.reset.resetV.innerHTML = "Reset view"
+            this.menu.reset.appendChild(this.menu.reset.resetV);
+
+            this.menu.zoom = this.createEl("li", "", "Zoom", "");
+            this.menu.zoom.zoomIn = this.createEl("div", "", "Zoom IN (+)", "in");
+            setBgImage(this.menu.zoom.zoomIn, "zoomin.png");
+            this.menu.zoom.zoomOut = this.createEl("div", "", "Zoom OUT (-)", "out");
+            setBgImage(this.menu.zoom.zoomOut, "zoomout.png");
+            this.menu.zoom.appendChild(this.menu.zoom.zoomIn);
+            this.menu.zoom.appendChild(this.menu.zoom.zoomOut);
+
+            this.menu.rotation = this.createEl("li", "", "Rotate", "");
+            this.menu.rotation.rotLeft = this.createEl("div", "", "Rotate CCW (R)", "left");
+            setBgImage(this.menu.rotation.rotLeft, "rotate.png");
+            this.menu.rotation.rotRight = this.createEl("div", "", "Rotate CW (L)", "right");
+            setBgImage(this.menu.rotation.rotRight, "rotate.png");
+            this.menu.rotation.appendChild(this.menu.rotation.rotLeft);
+            this.menu.rotation.appendChild(this.menu.rotation.rotRight);
+
+            this.menu.menuUl.appendChild(this.menu.reset);
+            this.menu.menuUl.appendChild(this.menu.zoom);
+            this.menu.menuUl.appendChild(this.menu.rotation);
+            this.menu.appendChild(this.menu.menuUl);
+        }
+
+        if(this.settings.presentation) {
+            this.menu.pres = this.createEl("li", "", "Presentation settings", "");
+            this.menu.pres.int = this.createEl("input" , "", "Time interval (in ms)", "");
+            this.menu.pres.int.name = "interval"
+            this.menu.pres.int.value = this.settings.defPresentationInterval;
+            this.menu.pres.int.size = "1";
+            this.menu.pres.int.maxLength = "5";
+            this.menu.pres.appendChild(this.menu.pres.int);
+
+
+            this.menu.pres.play = this.createEl("div", "", "Run presentation (Space)", "run");
+            setBgImage(this.menu.pres.play, "play.png");
+            this.menu.pres.appendChild(this.menu.pres.play);
+
+            this.menu.menuUl.appendChild(this.menu.pres);
         }
     }
 
+    /**
+     * Sets background image of element to "imageName"
+     * @param {*} object 
+     * @param {*} imageName 
+     */
     function setBgImage(object, imageName) {
         $(object).css("background-image", "url('" + settings.imagesDir + imageName + "')");
     }
 
+    /**
+     * Opens menu with advanced functions
+     */
     this.openMenu = function() {
         $(this.menu).addClass("active");
 
@@ -167,6 +234,9 @@ function LbHTMLStructure(settings) {
         $(this.menu.menuUl).slideDown("fast");
     }
 
+    /**
+     * Closes menu with advanced functions
+     */
     this.closeMenu = function() {
         $(this.menu.menuUl).slideUp("medium", () => {
             if(this.settings.shadows)  {
@@ -178,64 +248,39 @@ function LbHTMLStructure(settings) {
         });
     }
 
-    this.createMenu = function() {
-        this.menu = this.createEl("div", "menu.png", "Menu", "menu");
-        this.menu.menuIconCont = this.createEl("div", "", "", "ico_cont");
-        let menuIcon = this.createEl("img", "menu.png", "Menu", "menu_icon");
-        this.menu.menuIconCont.appendChild(menuIcon);
-        this.menu.appendChild(this.menu.menuIconCont);
-
-        this.menu.menuUl = this.createEl("ul", "", "", "");
-
-        if(this.settings.transformations) {
-            this.menu.reset = this.createEl("li", "", "Reset view", "");
-            this.menu.reset.innerHTML = "Reset view"
-            this.menu.menuUl.appendChild(this.menu.reset);
-
-            this.menu.zoom = this.createEl("li", "", "Zoom", "");
-            this.menu.zoom.zoomIn = this.createEl("div", "", "Zoom IN", "in");
-            setBgImage(this.menu.zoom.zoomIn, "zoomin.png");
-            this.menu.zoom.zoomOut = this.createEl("div", "", "Zoom OUT", "out");
-            setBgImage(this.menu.zoom.zoomOut, "zoomout.png");
-            this.menu.zoom.appendChild(this.menu.zoom.zoomIn);
-            this.menu.zoom.appendChild(this.menu.zoom.zoomOut);
-
-            this.menu.rotation = this.createEl("li", "", "Rotate", "");
-            this.menu.rotation.rotLeft = this.createEl("div", "", "Rotate counterclockwise", "left");
-            setBgImage(this.menu.rotation.rotLeft, "rotate.png");
-            this.menu.rotation.rotRight = this.createEl("div", "", "Rotate clockwise", "right");
-            setBgImage(this.menu.rotation.rotRight, "rotate.png");
-            this.menu.rotation.appendChild(this.menu.rotation.rotLeft);
-            this.menu.rotation.appendChild(this.menu.rotation.rotRight);
-
-            this.menu.menuUl.appendChild(this.menu.zoom);
-            this.menu.menuUl.appendChild(this.menu.rotation);
-            this.menu.appendChild(this.menu.menuUl);
+    /**
+     * Sets bg image of play button to play/stop icon
+     * @param {*} setToPlay if its true, play icon is showed
+     */
+    this.setPlayButton = function(setToPlay) {
+        if(setToPlay) {
+            setBgImage(this.menu.pres.play, "play.png");
+        }
+        else {
+            setBgImage(this.menu.pres.play, "pause.png");
         }
     }
 
 
+    /**
+     * Creates arrows to change shown photo
+     */
     this.createArrows = function() {
         //next photo button
+        let nextBox = this.createEl("div", "", "", "next_box");
         this.next = this.createEl("img", "next.png", "Next image", "next");
-        if(this.settings.shadows) {
-            let nextBox = this.createEl("div", "", "", "next_box");
-            nextBox.appendChild(this.next);
-            this.grandParent.appendChild(nextBox);
-        }
-        else {
-            this.grandParent.appendChild(this.next);
-        }
-        
+        nextBox.appendChild(this.next);
+        this.grandParent.appendChild(nextBox);
+
         //previous photo button
+        let prevBox = this.createEl("div", "", "", "prev_box");
         this.prev = this.createEl("img", "next.png", "Previous image", "prev");
+        prevBox.appendChild(this.prev);
+        this.grandParent.appendChild(prevBox);
+
         if(this.settings.shadows) {
-            let prevBox = this.createEl("div", "", "", "prev_box");
-            prevBox.appendChild(this.prev);
-            this.grandParent.appendChild(prevBox);
-        }
-        else {
-            this.grandParent.appendChild(this.prev);
+            $(nextBox).addClass("shadow");
+            $(prevBox).addClass("shadow");
         }
     }
 
@@ -310,7 +355,7 @@ function LbHTMLStructure(settings) {
      * Creates HTML element
      * @param {*} type html tag, used for element
      * @param {*} bg background image (can be empty)
-     * @param {*} title title text, showed when user hover cursor over the element
+     * @param {*} title title text, shown when user hover cursor over the element
      * @param {*} id string used for identification of new element
      * @returns object with created element
      */
@@ -334,7 +379,7 @@ function LbHTMLStructure(settings) {
 
     /**
      * Updates HTML structure to current photo and (hides arrows, if photo is last/first and loop is disabled)
-     * @param {*} imageObject object of image from page that should be showed
+     * @param {*} imageObject object of image from page that should be shown
      * @param {*} curImIndex index of current photo in galery (important for numbering)
      * @param {*} totalImNumber total number of photos in current galery (important for numbering)
      */
@@ -374,7 +419,7 @@ function LbHTMLStructure(settings) {
 
     /**
      * Updates main image element with corresponding photo
-     * @param {*} imageObject image that will be showed lightbox (or its original version)
+     * @param {*} imageObject image that will be shown lightbox (or its original version)
      */
     this.updateImage = function(imageObject) {
 
@@ -695,7 +740,7 @@ function GaleriesCreator() {
 
 /**
  * "Main" object, which holds the current position and changes it
- * @param {*} arrOfGaleries array of galeries that should be showed in lightbox
+ * @param {*} arrOfGaleries array of galeries that should be shown in lightbox
  * @param {*} HTMLStruct specific hierarchy of elements that will show the galeries on webpage
  */
 function Lightbox(arrOfGaleries, HTMLStruct) {
@@ -703,6 +748,7 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
     this.curIm = 0;
     this.curGal = 0;
     this.frame = HTMLStruct;
+    this.presentationInterval = null;
 
     this.retCurGalLength = function() {
         return this.galeries[this.curGal].imgs.length;
@@ -766,7 +812,7 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
     }
 
     /**
-     * Sets position in presentation to given values
+     * Sets position in view to given values
      * @param {*} gal index of new position in galery array
      * @param {*} im index of new position in current galery
      */
@@ -793,7 +839,7 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
     }
 
     /**
-     * Preloads specific image showed in LB galery
+     * Preloads specific image shown in LB galery
      */
      this.preloadSpecific = function(gal = 0, im = 0) {
         let curIm = new Image();
@@ -836,6 +882,55 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
         return this.galeries[this.curGal].imgs[this.curIm];
     }
 
+    /**
+     * Resets presentation in lightbox
+     */
+    this.reset = function() {
+        if(this.presentationInterval != null) {
+            clearInterval(this.presentationInterval);
+            this.run();
+        }
+    }
+
+    /**
+     * Stops presentation
+     */
+    this.stop = function() {
+        clearInterval(this.presentationInterval);
+        this.presentationInterval = null;
+
+        this.frame.setPlayButton(true);
+        $(this.frame.link).show();
+        this.frame.cross.src = this.frame.settings.imagesDir + "close.png";
+        this.frame.cross.title = "Close galery (Esc)";
+        this.frame.menu.pres.play.title = "Run presentation (Space)";
+        this.frame.updateArrows(this.curIm, this.galeries[this.curGal].imgs.length);
+    }
+
+    /**
+     * Runs automatic presentation of photos shown in lightbox
+     * @param {*} interval time for which is one photo shown
+     */
+    this.run = function(interval = this.frame.menu.pres.int.value) {
+        this.presentationInterval = setInterval(() => {
+            let isLastPhoto = this.curIm == (this.galeries[this.curGal].imgs.length - 1);
+            if(isLastPhoto && !this.frame.settings.loop) {
+                this.stop();
+                return;
+            }
+
+            this.next();
+            this.frame.setArrowsVisibility(false, false); //Photo udate updates also arrows
+        }, interval);
+        
+        this.frame.setPlayButton(false);
+        $(this.frame.link).hide();
+        this.frame.closeMenu();
+        this.frame.cross.src = this.frame.settings.imagesDir + "pause.png";
+        this.frame.cross.title = "Stop presentation (Space)";
+        this.frame.menu.pres.play.title = "Stop presentation (Space)";
+        this.frame.setArrowsVisibility(false, false);
+    }
 }
 
 /**
@@ -860,7 +955,14 @@ function Controls(settings, frame, lightbox) {
      this.addButtonEvents =  function() {
         this.frame.next.addEventListener("click", () => {this.lb.next();});
         this.frame.prev.addEventListener("click", () => {this.lb.prev();});
-        this.frame.cross.addEventListener("click", () => {this.frame.hideFrame();});
+        this.frame.cross.addEventListener("click", () => {
+            if(this.lb.presentationInterval) {
+                this.lb.stop();
+            }
+            else {
+                this.frame.hideFrame();
+            }
+        });
 
         if(this.settings.transformations) {
             this.frame.menu.reset.addEventListener("click", () => {
@@ -880,6 +982,17 @@ function Controls(settings, frame, lightbox) {
             });
         }
 
+        if(this.settings.presentation) {
+            this.frame.menu.pres.play.addEventListener("click", () => {
+                if(this.lb.presentationInterval == null) {
+                    this.lb.run();
+                }
+                else {
+                    this.lb.stop();
+                }
+            });
+        }
+
         //Toggle menu visibility
         this.frame.menu.menuIconCont.addEventListener("click", () => {
             let isClosed = !this.frame.menu.className.includes("active");
@@ -896,7 +1009,12 @@ function Controls(settings, frame, lightbox) {
                 this.menuClose(e.target);
             }
             else {
-                this.lbClose(e.target);
+                if(this.lb.presentationInterval) {
+                    this.lb.stop();
+                }
+                else {
+                    this.lbClose(e.target);
+                }
             }
         });
 
@@ -1014,15 +1132,37 @@ function Controls(settings, frame, lightbox) {
         switch(key.code) {
             case "ArrowLeft":
                 this.frame.lightenButton(this.frame.prev);
+                if(this.lb.presentationInterval) {
+                    this.lb.reset();
+                }
                 this.lb.prev();
+
                 break;
             case "ArrowRight":
                 this.frame.lightenButton(this.frame.next);
+                if(this.lb.presentationInterval) {
+                    this.lb.reset();
+                }
                 this.lb.next();
                 break;
+
             case "Escape":
                 this.frame.lightenButton(this.frame.cross);
-                this.frame.hideFrame();
+                if(this.lb.presentationInterval) {
+                    this.lb.stop();
+                }
+                else {
+                    this.frame.hideFrame();
+                }
+                break;
+
+            case "Space":
+                if(this.lb.presentationInterval) {
+                    this.lb.stop();
+                }
+                else {
+                    this.lb.run();
+                }
                 break;
         }
     }

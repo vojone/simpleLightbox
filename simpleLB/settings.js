@@ -18,12 +18,13 @@ const settings = {                      //MEANING:
     maxWidth : "100%",                  //maximum width of showed image, default is 100% (it can be given in every CSS-friendly format, but it must be in quotes!)
 
     
-    //Presentation settings
+    //Features
     captions: true,                     //allows captions (it can be defined for each photos by data-caption attribute)
     numbering: true,                    //allows numbering
-    loop: false,                        //allows infinity presentation (from last photo you can skip to first) = true
+    loop: false,                        //allows infinity loop (from last photo you can skip to first) = true
     transformations: true,              //allows tranformation of image (user can rotate, zoom or translate the image (without anypermanent changes!!!))
-
+    presentation: true,                 //allows run of automatic presentation
+    defPresentationInterval: 3000,      //default time for which be photo shown
 
     //Control settings
     keyboardEnable: true,               //allows controlling galery by keyboard
