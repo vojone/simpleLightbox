@@ -55,7 +55,7 @@ Features
     &lt;img src="image/src5.jpg" class="lb b"&gt;
 </pre>
 
-Now, when user clicked on src2.jpg and he is going through the the photos by side arrows, he can't see src4.jpg and src5.jpg directly.
+Now, when user clicked on *src2.jpg* and he is going through the the photos by side arrows, he can't see *src4.jpg* and *src5.jpg* directly.
 He must end lightbox and then click on one of these two.
 
 **Be carefull, it can have negative side efect, e. g. if you use special class name for style specification.**
@@ -64,7 +64,11 @@ You can solve it by adding your special class name before "lb". Important is onl
 **This feature can't be easily disabled.**
 
 
-+ You can easily modify plenty of lightbox properties (especialy visual aspects) by changing settings.js file.
++ You can easily modify plenty of lightbox features and properties (especialy visual aspects) by changing *settings.js* file.
+
++ It's possible to manipulate with photo (keys R,L,+,- and mouse or menu in right top corner). User can **rotate, zoom or translate** photo to better view. This feature an be disabled in *settings.js*.
+
++ It's possible also run automatic **presentation** of photos (if it's is allowed in settings.js). This presentation can be run by hitting Space key or in menu. In menu you can also set time for which will be every photo shown in **ms** (when current photo is updated manually by keys this time interval is restarted). Presentation starts with current photo and can be started only in one direction. 
 
 
 See index.html for more information and examples...
