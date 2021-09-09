@@ -154,7 +154,7 @@ function LbHTMLStructure(settings) {
     }
 
     /**
-     * Creates menu with advance functions
+     * Creates menu with advanced functions
      */
      this.createMenu = function() {
         this.menu = this.createEl("div", "menu.png", "Menu", "menu");
@@ -170,6 +170,17 @@ function LbHTMLStructure(settings) {
             this.menu.reset.resetV = this.createEl("div", "", "", "res_view");
             this.menu.reset.resetV.innerHTML = "Reset view"
             this.menu.reset.appendChild(this.menu.reset.resetV);
+
+            var saveTitle = "Zoom, rotation and translation are applied to next/previous images";
+            this.menu.save = this.createEl("li", "", saveTitle, "");
+            this.menu.save.box = this.createEl("div", "", "", "save_view");
+            this.menu.save.box.checkbox = this.createEl("input", "", "Save view", "");
+            this.menu.save.box.checkbox.type = "checkbox";
+            this.menu.save.box.label = this.createEl("label", "", "", "");
+            this.menu.save.box.label.innerHTML = "Save view";
+            this.menu.save.box.appendChild(this.menu.save.box.label)
+            this.menu.save.box.appendChild(this.menu.save.box.checkbox);
+            this.menu.save.appendChild(this.menu.save.box);
 
             this.menu.zoom = this.createEl("li", "", "Zoom", "");
             this.menu.zoom.zoomIn = this.createEl("div", "", "Zoom IN (+)", "in");
@@ -188,9 +199,9 @@ function LbHTMLStructure(settings) {
             this.menu.rotation.appendChild(this.menu.rotation.rotRight);
 
             this.menu.menuUl.appendChild(this.menu.reset);
+            this.menu.menuUl.appendChild(this.menu.save);
             this.menu.menuUl.appendChild(this.menu.zoom);
             this.menu.menuUl.appendChild(this.menu.rotation);
-            this.menu.appendChild(this.menu.menuUl);
         }
 
         if(this.settings.presentation) {
@@ -209,6 +220,10 @@ function LbHTMLStructure(settings) {
 
             this.menu.menuUl.appendChild(this.menu.pres);
         }
+
+        if(this.settings.presentation || this.settings.transformations) {
+            this.menu.appendChild(this.menu.menuUl);
+        }
     }
 
     /**
@@ -225,7 +240,7 @@ function LbHTMLStructure(settings) {
      */
     this.openMenu = function() {
         $(this.menu).addClass("active");
-
+    
         if(this.settings.shadows)  {
             let buttBox = $(this.menu).parents("div").first();
             buttBox.addClass("active");
@@ -424,7 +439,11 @@ function LbHTMLStructure(settings) {
     this.updateImage = function(imageObject) {
 
         this.showLoader();
-        this.transformer.transformToDefault();
+
+        if(this.settings.transformations && !this.menu.save.box.checkbox.checked) {
+            this.transformer.transformToDefault();
+        }
+
         let newImSrc = imageObject.src;
         let origImSrc;
 
@@ -900,9 +919,12 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
         this.presentationInterval = null;
 
         this.frame.setPlayButton(true);
-        $(this.frame.link).show();
-        this.frame.cross.src = this.frame.settings.imagesDir + "close.png";
-        this.frame.cross.title = "Close galery (Esc)";
+
+        $(this.frame.cross).css("visibility", "visible");
+        this.frame.cross.disabled = false;
+
+        this.frame.link.downImg.src = this.frame.settings.imagesDir + "download.png";
+        this.frame.link.title = "Close galery (Esc)";
         this.frame.menu.pres.play.title = "Run presentation (Space)";
         this.frame.updateArrows(this.curIm, this.galeries[this.curGal].imgs.length);
     }
@@ -924,10 +946,13 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
         }, interval);
         
         this.frame.setPlayButton(false);
-        $(this.frame.link).hide();
+
+        $(this.frame.cross).css("visibility", "hidden");
+        this.frame.cross.disabled = true;
+
         this.frame.closeMenu();
-        this.frame.cross.src = this.frame.settings.imagesDir + "pause.png";
-        this.frame.cross.title = "Stop presentation (Space)";
+        this.frame.link.downImg.src = this.frame.settings.imagesDir + "pause.png";
+        this.frame.link.title = "Stop presentation (Space)";
         this.frame.menu.pres.play.title = "Stop presentation (Space)";
         this.frame.setArrowsVisibility(false, false);
     }
@@ -955,7 +980,7 @@ function Controls(settings, frame, lightbox) {
      this.addButtonEvents =  function() {
         this.frame.next.addEventListener("click", () => {this.lb.next();});
         this.frame.prev.addEventListener("click", () => {this.lb.prev();});
-        this.frame.cross.addEventListener("click", () => {
+        this.frame.link.addEventListener("click", () => {
             if(this.lb.presentationInterval) {
                 this.lb.stop();
             }
@@ -967,6 +992,14 @@ function Controls(settings, frame, lightbox) {
         if(this.settings.transformations) {
             this.frame.menu.reset.addEventListener("click", () => {
                 this.frame.transformer.transformToDefault();
+            });
+            this.frame.menu.save.box.label.addEventListener("click", () => {
+                if(this.frame.menu.save.box.checkbox.checked) {
+                    this.frame.menu.save.box.checkbox.checked = false;
+                }
+                else {
+                    this.frame.menu.save.box.checkbox.checked = true;
+                }
             });
             this.frame.menu.zoom.zoomIn.addEventListener("click", () => {
                 this.frame.transformer.scale(this.frame.transformer.curScale + 0.2);
@@ -1132,7 +1165,7 @@ function Controls(settings, frame, lightbox) {
         switch(key.code) {
             case "ArrowLeft":
                 this.frame.lightenButton(this.frame.prev);
-                if(this.lb.presentationInterval) {
+                if(this.settings.presentation && this.lb.presentationInterval) {
                     this.lb.reset();
                 }
                 this.lb.prev();
@@ -1140,28 +1173,31 @@ function Controls(settings, frame, lightbox) {
                 break;
             case "ArrowRight":
                 this.frame.lightenButton(this.frame.next);
-                if(this.lb.presentationInterval) {
+                if(this.settings.presentation && this.lb.presentationInterval) {
                     this.lb.reset();
                 }
                 this.lb.next();
                 break;
 
             case "Escape":
-                this.frame.lightenButton(this.frame.cross);
                 if(this.lb.presentationInterval) {
                     this.lb.stop();
+                    this.frame.lightenButton(this.frame.link);
                 }
                 else {
                     this.frame.hideFrame();
+                    this.frame.lightenButton(this.frame.cross);
                 }
                 break;
 
             case "Space":
-                if(this.lb.presentationInterval) {
-                    this.lb.stop();
-                }
-                else {
-                    this.lb.run();
+                if(this.settings.presentation) {
+                    if(this.lb.presentationInterval) {
+                        this.lb.stop();
+                    }
+                    else {
+                        this.lb.run();
+                    }
                 }
                 break;
         }

@@ -113,6 +113,8 @@
     max-height: 1.2em;
     min-height: 24px;
     height: calc(24px + 0.75vw);
+
+    min-width: 70px;
 }
 
 
@@ -166,6 +168,26 @@
 
 #lb_cont #menu > ul > li > input:focus {
     outline: none;
+}
+
+#lb_cont #menu > ul > li > div > input[type=checkbox] {
+    appearance: none;
+    background-color: transparent;
+    height: 1em;
+    width: 1em;
+    cursor: pointer;
+    margin: 0 0 0 2px;
+}
+
+#lb_cont #menu > ul > li > div > label {
+    cursor: pointer;
+}
+
+#lb_cont #menu > ul > li > div > input[type=checkbox]:checked:before {
+    content: '\2714';
+    color: white;
+    font-size: 1em;
+    position: relative;
 }
 
 #lb_cont #menu > ul > li > div:hover, #lb_cont #menu > ul > li > input:hover {
