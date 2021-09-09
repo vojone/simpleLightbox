@@ -315,7 +315,7 @@ function LbHTMLStructure(settings) {
 
         //Just dummy obj. to eliminate bug, when non-existing photo is  still loading and loading
         let empty = new Image(); 
-        empty.src = this.settings.imagesDir + "back.png";
+        empty.src = this.settings.imagesDir + "next.png";
         this.updateImage(empty);
         this.photo.addEventListener("error", () => {this.hideLoader(50);}); //<= err handling func.
 
