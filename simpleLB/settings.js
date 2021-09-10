@@ -6,7 +6,7 @@
  *                        Simple lightbox without changing its implementation)                        
  *********************************************************************************************** */
 
-const settings = {                      //MEANING:
+var settings = {                      //MEANING:
     //Visual settings
     blurFlag : true,                    //if true body is blurred while is lightbox used (!set bgAlpha to < 1!)
     bgAlpha : 0.9,                      //bg transparency, float between 0 and 1 (1 is completely black, 0 is completely transparent)
@@ -23,8 +23,8 @@ const settings = {                      //MEANING:
     numbering: true,                    //allows numbering
     loop: false,                        //allows infinity loop (from last photo you can skip to first) = true
     transformations: true,              //allows tranformation of image (user can rotate, zoom or translate the image (without anypermanent changes!!!))
-    presentation: true,                 //allows run of automatic presentation
-    defPresentationInterval: 3000,      //default time for which be photo shown
+    slideshow: true,                    //allows run of automatic slideshow
+    defInterval: 3000,                  //default time for which be photo shown
 
     //Control settings
     keyboardEnable: true,               //allows controlling galery by keyboard

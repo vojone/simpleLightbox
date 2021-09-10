@@ -1,10 +1,10 @@
 simpleLB
 ========
 
-Very simple presentation widget for presenting photos on your website, which can be used super easily.
+Very simple presentation widget for presenting photos on your website, which can be used super easily (it's what why I called it simple).
 It should work in all major browsers (Firefox, Edge, Chrome, Safari, Opera), but **it needs JavaScript to be enabled!**.
 
-![simpleLB presentation](ex1.png "Photo viewed in simpleLB")
+![simpleLB appearance](ex1.png "Photo viewed in simpleLB")
 
 **For usage is important only simpleLB folder**, rest of files and folders are only additional with examples. 
 
@@ -38,14 +38,19 @@ And that's basicaly everything.
 Features
 --------
 
-+ You can add short description to each photo by *data-caption* attribute:
+* You can add short description to each photo by *data-caption* attribute:
 
 <pre>
     &lt;img src="image/src1.jpg" class="lb" data-caption="Lorem Ipsum Dolor Sit Amet">
 </pre>
 
+* It is possible to show a photo in lightbox other the one is shown on webpage (can be usefull for thumbnails). Use *data-orig* attribute and specify the path to target image...
 
-+ You can divide your images into more galeries (presentations, sections...) by adding subclass name after "lb":
+<pre>
+    &lt;img src="thumbnails/src1.jpg" class="lb" data-orig="images/src1.jpg">
+</pre>
+
+* You can divide your images into more galeries (presentations, sections...) by adding subclass name after "lb":
 
  <pre>   
     &lt;img src="image/src1.jpg" class="lb a"&gt;
@@ -64,11 +69,29 @@ You can solve it by adding your special class name before "lb". Important is onl
 **This feature can't be easily disabled.**
 
 
-+ You can easily modify plenty of lightbox features and properties (especialy visual aspects) by changing *settings.js* file.
+* You can easily modify plenty of lightbox features and properties (especialy visual aspects) by changing *settings.js* file.
 
-+ It's possible to manipulate with photo (keys R,L,+,- and mouse or menu in right top corner). User can **rotate, zoom or translate** photo to better view. This feature an be disabled in *settings.js*.
+* It's possible to manipulate with photo (keys R,L,+,- and mouse or menu in right top corner). User can **rotate, zoom or translate** photo to better view. This feature an be disabled in *settings.js*.
 
-+ It's possible also run automatic **presentation** of photos (if it's is allowed in settings.js). This presentation can be run by hitting Space key or in menu. In menu you can also set time for which will be every photo shown in **ms** (when current photo is updated manually by keys this time interval is restarted). Presentation starts with current photo and can be started only in one direction. 
+* To run automatic **presentation** of photos (if it's is allowed in *settings.js*). This presentation can be run by hitting Space key or in menu. In menu you can also set time for which will be every photo shown in **ms** (when current photo is updated manually by keys this time interval is restarted). Presentation starts with current photo and can be started only in one direction. 
+
+* If tranformations and presentation are disabled menu is hidden
+
+![simpleLB appearance](ex2.png "Menu in Lb")
+
+Controls
+--------
+* Something can be controled by keyboard (if it is allowed in *settings.js*):
+
+`Left`/`Right arrows` - previous/next photo
+
+`Escape` - hide lightbox/(stop auto presentation, if it is allowed)
+
+`Space` - run/stop automatic presentation with selected interval (see menu for checking interval)
+
+`R`/`L` - rotate to right/left (CW/CCW)
+
+`+`/`-` (numeric) - zoom IN/OUT
 
 
 See index.html for more information and examples...

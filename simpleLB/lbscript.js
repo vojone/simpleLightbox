@@ -204,24 +204,24 @@ function LbHTMLStructure(settings) {
             this.menu.menuUl.appendChild(this.menu.rotation);
         }
 
-        if(this.settings.presentation) {
-            this.menu.pres = this.createEl("li", "", "Presentation settings", "");
+        if(this.settings.slideshow) {
+            this.menu.pres = this.createEl("li", "", "Slideshow settings", "");
             this.menu.pres.int = this.createEl("input" , "", "Time interval (in ms)", "");
             this.menu.pres.int.name = "interval"
-            this.menu.pres.int.value = this.settings.defPresentationInterval;
+            this.menu.pres.int.value = this.settings.defInterval;
             this.menu.pres.int.size = "1";
             this.menu.pres.int.maxLength = "5";
             this.menu.pres.appendChild(this.menu.pres.int);
 
 
-            this.menu.pres.play = this.createEl("div", "", "Run presentation (Space)", "run");
+            this.menu.pres.play = this.createEl("div", "", "Run slideshow (Space)", "run");
             setBgImage(this.menu.pres.play, "play.png");
             this.menu.pres.appendChild(this.menu.pres.play);
 
             this.menu.menuUl.appendChild(this.menu.pres);
         }
 
-        if(this.settings.presentation || this.settings.transformations) {
+        if(this.settings.slideshow || this.settings.transformations) {
             this.menu.appendChild(this.menu.menuUl);
         }
     }
@@ -767,7 +767,7 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
     this.curIm = 0;
     this.curGal = 0;
     this.frame = HTMLStruct;
-    this.presentationInterval = null;
+    this.slideshowInterval = null;
 
     this.retCurGalLength = function() {
         return this.galeries[this.curGal].imgs.length;
@@ -902,21 +902,21 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
     }
 
     /**
-     * Resets presentation in lightbox
+     * Resets slideshow in lightbox
      */
     this.reset = function() {
-        if(this.presentationInterval != null) {
-            clearInterval(this.presentationInterval);
+        if(this.slideshowInterval != null) {
+            clearInterval(this.slideshowInterval);
             this.run();
         }
     }
 
     /**
-     * Stops presentation
+     * Stops slideshow
      */
     this.stop = function() {
-        clearInterval(this.presentationInterval);
-        this.presentationInterval = null;
+        clearInterval(this.slideshowInterval);
+        this.slideshowInterval = null;
 
         this.frame.setPlayButton(true);
 
@@ -925,16 +925,16 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
 
         this.frame.link.downImg.src = this.frame.settings.imagesDir + "download.png";
         this.frame.link.title = "Close galery (Esc)";
-        this.frame.menu.pres.play.title = "Run presentation (Space)";
+        this.frame.menu.pres.play.title = "Run slideshow (Space)";
         this.frame.updateArrows(this.curIm, this.galeries[this.curGal].imgs.length);
     }
 
     /**
-     * Runs automatic presentation of photos shown in lightbox
+     * Runs automatic slideshow of photos shown in lightbox
      * @param {*} interval time for which is one photo shown
      */
     this.run = function(interval = this.frame.menu.pres.int.value) {
-        this.presentationInterval = setInterval(() => {
+        this.slideshowInterval = setInterval(() => {
             let isLastPhoto = this.curIm == (this.galeries[this.curGal].imgs.length - 1);
             if(isLastPhoto && !this.frame.settings.loop) {
                 this.stop();
@@ -952,8 +952,8 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
 
         this.frame.closeMenu();
         this.frame.link.downImg.src = this.frame.settings.imagesDir + "pause.png";
-        this.frame.link.title = "Stop presentation (Space)";
-        this.frame.menu.pres.play.title = "Stop presentation (Space)";
+        this.frame.link.title = "Stop slideshow (Space)";
+        this.frame.menu.pres.play.title = "Stop slideshow (Space)";
         this.frame.setArrowsVisibility(false, false);
     }
 }
@@ -981,7 +981,7 @@ function Controls(settings, frame, lightbox) {
         this.frame.next.addEventListener("click", () => {this.lb.next();});
         this.frame.prev.addEventListener("click", () => {this.lb.prev();});
         this.frame.link.addEventListener("click", () => {
-            if(this.lb.presentationInterval) {
+            if(this.lb.slideshowInterval) {
                 this.lb.stop();
             }
             else {
@@ -1015,9 +1015,9 @@ function Controls(settings, frame, lightbox) {
             });
         }
 
-        if(this.settings.presentation) {
+        if(this.settings.slideshow) {
             this.frame.menu.pres.play.addEventListener("click", () => {
-                if(this.lb.presentationInterval == null) {
+                if(this.lb.slideshowInterval == null) {
                     this.lb.run();
                 }
                 else {
@@ -1042,7 +1042,7 @@ function Controls(settings, frame, lightbox) {
                 this.menuClose(e.target);
             }
             else {
-                if(this.lb.presentationInterval) {
+                if(this.lb.slideshowInterval) {
                     this.lb.stop();
                 }
                 else {
@@ -1165,7 +1165,7 @@ function Controls(settings, frame, lightbox) {
         switch(key.code) {
             case "ArrowLeft":
                 this.frame.lightenButton(this.frame.prev);
-                if(this.settings.presentation && this.lb.presentationInterval) {
+                if(this.settings.slideshow && this.lb.slideshowInterval) {
                     this.lb.reset();
                 }
                 this.lb.prev();
@@ -1173,14 +1173,14 @@ function Controls(settings, frame, lightbox) {
                 break;
             case "ArrowRight":
                 this.frame.lightenButton(this.frame.next);
-                if(this.settings.presentation && this.lb.presentationInterval) {
+                if(this.settings.slideshow && this.lb.slideshowInterval) {
                     this.lb.reset();
                 }
                 this.lb.next();
                 break;
 
             case "Escape":
-                if(this.lb.presentationInterval) {
+                if(this.lb.slideshowInterval) {
                     this.lb.stop();
                     this.frame.lightenButton(this.frame.link);
                 }
@@ -1191,8 +1191,8 @@ function Controls(settings, frame, lightbox) {
                 break;
 
             case "Space":
-                if(this.settings.presentation) {
-                    if(this.lb.presentationInterval) {
+                if(this.settings.slideshow) {
+                    if(this.lb.slideshowInterval) {
                         this.lb.stop();
                     }
                     else {
