@@ -28,5 +28,5 @@ var settings = {                      //MEANING:
 
     //Control settings
     keyboardEnable: true,               //allows controlling galery by keyboard
-    cTransByMouse: true,                //allows controlling transformations by mouse (without tranformations enabled has no sense!!!)
+    cTransByMouse: true,                //allows controlling transformations by mouse or by touches (without tranformations enabled has no sense!!!)
 }

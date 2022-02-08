@@ -1,8 +1,8 @@
 simpleLB
 ========
 
-Very simple presentation widget for presenting photos on your website, which can be used super easily (it's what why I called it simple).
-It should work in all major browsers (Firefox, Edge, Chrome, Safari, Opera), but **it needs JavaScript to be enabled!**.
+Simple presentation widget for presenting photos on your website, which can be used super easily (that's what why I called it simple).
+It should work in all major browsers (Firefox, Edge, Chrome, Safari, Opera) on PCs or on mobile devices, but **it needs JavaScript to be enabled!**.
 
 ![simpleLB appearance](ex1.png "Photo viewed in simpleLB")
 

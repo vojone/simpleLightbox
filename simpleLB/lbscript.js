@@ -11,7 +11,7 @@
  * 
  *********************************************************************************************** */
 
-$(document).ready(() => {
+ $(document).ready(() => {
     lbHTML = new LbHTMLStructure(settings);
     lbHTML.prepare();
 
@@ -95,10 +95,10 @@ function LbHTMLStructure(settings) {
      * @note needs grandparent element to be created first
      */
     this.createPhoto = function() {
-        this.photo = this.createEl("img", "", "Photo", "main_photo");
+        this.photo = this.createEl("img", "", "Foto", "main_photo");
         this.photo.loading = "lazy";
-        this.photo.alt = "Something went wrong with your image...\
-                          Try to check the path to the image and if it exists...";
+        this.photo.alt = "Něco se pokazilo...\
+                          Zkuste zkontrolovat název fotografie a zda daná fotografie existuje...";
 
         this.photo.style.maxHeight = settings.maxHeight;
         this.photo.style.maxWidth = settings.maxWidth;
@@ -128,10 +128,10 @@ function LbHTMLStructure(settings) {
         this.createArrows();
 
         //close button 
-        this.cross = this.createEl("img", "close.png", "Close galery (Esc)", "cross");
+        this.cross = this.createEl("img", "close.png", "Zavřít galerii (Esc)", "cross");
 
         //downloading button
-        this.link = this.createEl("a", "", "Download image", "");
+        this.link = this.createEl("a", "", "Stáhnout obrázek", "");
         this.link.downImg = this.createEl("img", "download.png", "", "download");
         this.link.appendChild(this.link.downImg);
 
@@ -154,7 +154,7 @@ function LbHTMLStructure(settings) {
     }
 
     /**
-     * Creates menu with advanced functions
+     * Creates menu with advance functions
      */
      this.createMenu = function() {
         this.menu = this.createEl("div", "menu.png", "Menu", "menu");
@@ -166,63 +166,48 @@ function LbHTMLStructure(settings) {
         this.menu.menuUl = this.createEl("ul", "", "", "");
 
         if(this.settings.transformations) {
-            this.menu.reset = this.createEl("li", "", "Reset view", "");
+            this.menu.reset = this.createEl("li", "", "Obnovit", "");
             this.menu.reset.resetV = this.createEl("div", "", "", "res_view");
-            this.menu.reset.resetV.innerHTML = "Reset view"
+            this.menu.reset.resetV.innerHTML = "Obnovit"
             this.menu.reset.appendChild(this.menu.reset.resetV);
 
-            var saveTitle = "Zoom, rotation and translation are applied to next/previous images";
-            this.menu.save = this.createEl("li", "", saveTitle, "");
-            this.menu.save.box = this.createEl("div", "", "", "save_view");
-            this.menu.save.box.checkbox = this.createEl("input", "", "Save view", "");
-            this.menu.save.box.checkbox.type = "checkbox";
-            this.menu.save.box.label = this.createEl("label", "", "", "");
-            this.menu.save.box.label.innerHTML = "Save view";
-            this.menu.save.box.appendChild(this.menu.save.box.label)
-            this.menu.save.box.appendChild(this.menu.save.box.checkbox);
-            this.menu.save.appendChild(this.menu.save.box);
-
             this.menu.zoom = this.createEl("li", "", "Zoom", "");
-            this.menu.zoom.zoomIn = this.createEl("div", "", "Zoom IN (+)", "in");
+            this.menu.zoom.zoomIn = this.createEl("div", "", "Přiblížit (+)", "in");
             setBgImage(this.menu.zoom.zoomIn, "zoomin.png");
-            this.menu.zoom.zoomOut = this.createEl("div", "", "Zoom OUT (-)", "out");
+            this.menu.zoom.zoomOut = this.createEl("div", "", "Oddálit (-)", "out");
             setBgImage(this.menu.zoom.zoomOut, "zoomout.png");
             this.menu.zoom.appendChild(this.menu.zoom.zoomIn);
             this.menu.zoom.appendChild(this.menu.zoom.zoomOut);
 
             this.menu.rotation = this.createEl("li", "", "Rotate", "");
-            this.menu.rotation.rotLeft = this.createEl("div", "", "Rotate CCW (R)", "left");
+            this.menu.rotation.rotLeft = this.createEl("div", "", "Rotace doprava (R)", "left");
             setBgImage(this.menu.rotation.rotLeft, "rotate.png");
-            this.menu.rotation.rotRight = this.createEl("div", "", "Rotate CW (L)", "right");
+            this.menu.rotation.rotRight = this.createEl("div", "", "Rotace doleva (L)", "right");
             setBgImage(this.menu.rotation.rotRight, "rotate.png");
             this.menu.rotation.appendChild(this.menu.rotation.rotLeft);
             this.menu.rotation.appendChild(this.menu.rotation.rotRight);
 
             this.menu.menuUl.appendChild(this.menu.reset);
-            this.menu.menuUl.appendChild(this.menu.save);
             this.menu.menuUl.appendChild(this.menu.zoom);
             this.menu.menuUl.appendChild(this.menu.rotation);
+            this.menu.appendChild(this.menu.menuUl);
         }
 
-        if(this.settings.slideshow) {
-            this.menu.pres = this.createEl("li", "", "Slideshow settings", "");
-            this.menu.pres.int = this.createEl("input" , "", "Time interval (in ms)", "");
+        if(this.settings.presentation) {
+            this.menu.pres = this.createEl("li", "", "Nastavení prezentace", "");
+            this.menu.pres.int = this.createEl("input" , "", "Čas na snímek (in ms)", "");
             this.menu.pres.int.name = "interval"
-            this.menu.pres.int.value = this.settings.defInterval;
+            this.menu.pres.int.value = this.settings.defPresentationInterval;
             this.menu.pres.int.size = "1";
             this.menu.pres.int.maxLength = "5";
             this.menu.pres.appendChild(this.menu.pres.int);
 
 
-            this.menu.pres.play = this.createEl("div", "", "Run slideshow (Space)", "run");
+            this.menu.pres.play = this.createEl("div", "", "Spustit (Mezerník)", "run");
             setBgImage(this.menu.pres.play, "play.png");
             this.menu.pres.appendChild(this.menu.pres.play);
 
             this.menu.menuUl.appendChild(this.menu.pres);
-        }
-
-        if(this.settings.slideshow || this.settings.transformations) {
-            this.menu.appendChild(this.menu.menuUl);
         }
     }
 
@@ -240,7 +225,7 @@ function LbHTMLStructure(settings) {
      */
     this.openMenu = function() {
         $(this.menu).addClass("active");
-    
+
         if(this.settings.shadows)  {
             let buttBox = $(this.menu).parents("div").first();
             buttBox.addClass("active");
@@ -283,13 +268,13 @@ function LbHTMLStructure(settings) {
     this.createArrows = function() {
         //next photo button
         let nextBox = this.createEl("div", "", "", "next_box");
-        this.next = this.createEl("img", "next.png", "Next image", "next");
+        this.next = this.createEl("img", "next.png", "Další obrázek", "next");
         nextBox.appendChild(this.next);
         this.grandParent.appendChild(nextBox);
 
         //previous photo button
         let prevBox = this.createEl("div", "", "", "prev_box");
-        this.prev = this.createEl("img", "next.png", "Previous image", "prev");
+        this.prev = this.createEl("img", "next.png", "Předchozí obrázek", "prev");
         prevBox.appendChild(this.prev);
         this.grandParent.appendChild(prevBox);
 
@@ -313,7 +298,7 @@ function LbHTMLStructure(settings) {
         }
 
         if(this.settings.numbering) {
-            this.number = this.createEl("div", "", "Current/Total", "numbering");
+            this.number = this.createEl("div", "", "Aktuálně/Celkově", "numbering");
             info.appendChild(this.number);
         }
     }
@@ -323,7 +308,7 @@ function LbHTMLStructure(settings) {
      * @note Grandparent element and main photo element must be created first
      */
     this.createLoader = function() {
-        this.loader = this.createEl("div", "", "Loading...", "lb_loader");
+        this.loader = this.createEl("div", "", "Načítání...", "lb_loader");
         this.grandParent.appendChild(this.loader);
 
         this.photo.addEventListener("load", () => {this.hideLoader(50);});
@@ -344,7 +329,7 @@ function LbHTMLStructure(settings) {
         }
 
         let titleCont = this.createEl("div", "", "", "title_cont");
-        titleCont.innerHTML = "Loading...";
+        titleCont.innerHTML = "Načítání...";
         this.loader.appendChild(titleCont);
     }
 
@@ -439,11 +424,7 @@ function LbHTMLStructure(settings) {
     this.updateImage = function(imageObject) {
 
         this.showLoader();
-
-        if(this.settings.transformations && !this.menu.save.box.checkbox.checked) {
-            this.transformer.transformToDefault();
-        }
-
+        this.transformer.transformToDefault();
         let newImSrc = imageObject.src;
         let origImSrc;
 
@@ -767,7 +748,7 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
     this.curIm = 0;
     this.curGal = 0;
     this.frame = HTMLStruct;
-    this.slideshowInterval = null;
+    this.presentationInterval = null;
 
     this.retCurGalLength = function() {
         return this.galeries[this.curGal].imgs.length;
@@ -902,39 +883,36 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
     }
 
     /**
-     * Resets slideshow in lightbox
+     * Resets presentation in lightbox
      */
     this.reset = function() {
-        if(this.slideshowInterval != null) {
-            clearInterval(this.slideshowInterval);
+        if(this.presentationInterval != null) {
+            clearInterval(this.presentationInterval);
             this.run();
         }
     }
 
     /**
-     * Stops slideshow
+     * Stops presentation
      */
     this.stop = function() {
-        clearInterval(this.slideshowInterval);
-        this.slideshowInterval = null;
+        clearInterval(this.presentationInterval);
+        this.presentationInterval = null;
 
         this.frame.setPlayButton(true);
-
-        $(this.frame.cross).css("visibility", "visible");
-        this.frame.cross.disabled = false;
-
-        this.frame.link.downImg.src = this.frame.settings.imagesDir + "download.png";
-        this.frame.link.title = "Close galery (Esc)";
-        this.frame.menu.pres.play.title = "Run slideshow (Space)";
+        $(this.frame.link).show();
+        this.frame.cross.src = this.frame.settings.imagesDir + "close.png";
+        this.frame.cross.title = "Zavřít galerii (Esc)";
+        this.frame.menu.pres.play.title = "Spustit (Mezerník)";
         this.frame.updateArrows(this.curIm, this.galeries[this.curGal].imgs.length);
     }
 
     /**
-     * Runs automatic slideshow of photos shown in lightbox
+     * Runs automatic presentation of photos shown in lightbox
      * @param {*} interval time for which is one photo shown
      */
     this.run = function(interval = this.frame.menu.pres.int.value) {
-        this.slideshowInterval = setInterval(() => {
+        this.presentationInterval = setInterval(() => {
             let isLastPhoto = this.curIm == (this.galeries[this.curGal].imgs.length - 1);
             if(isLastPhoto && !this.frame.settings.loop) {
                 this.stop();
@@ -946,14 +924,11 @@ function Lightbox(arrOfGaleries, HTMLStruct) {
         }, interval);
         
         this.frame.setPlayButton(false);
-
-        $(this.frame.cross).css("visibility", "hidden");
-        this.frame.cross.disabled = true;
-
+        $(this.frame.link).hide();
         this.frame.closeMenu();
-        this.frame.link.downImg.src = this.frame.settings.imagesDir + "pause.png";
-        this.frame.link.title = "Stop slideshow (Space)";
-        this.frame.menu.pres.play.title = "Stop slideshow (Space)";
+        this.frame.cross.src = this.frame.settings.imagesDir + "pause.png";
+        this.frame.cross.title = "Zastavit prezentaci (Mezerník)";
+        this.frame.menu.pres.play.title = "Zastavit prezentaci (Mezerník)";
         this.frame.setArrowsVisibility(false, false);
     }
 }
@@ -972,7 +947,28 @@ function Controls(settings, frame, lightbox) {
     this.keyboardBlocked = false;
     this.ctrlPressed = false;
     this.transStart = [this.frame.transformer.curPos[0], this.frame.transformer.curPos[1]];
+    this.lastTouchPosition = [];
     this.moveActivated = false;
+
+    this.rotStep = 90;
+    this.basicZoomStep = 0.2;
+
+    /**
+     * Zooms main photo
+     * @param {*} zoomf How much will be tho photo zoomed (+ will zoom in, - will zoom out hte photo)
+     * @param {*} sensitivity How much should be zoom sensitive
+     */
+     this.zoomPhoto = function(zoomf, sensitivity = 1) {
+        this.frame.transformer.scale(this.frame.transformer.curScale + zoomf*sensitivity);
+    }
+
+    /**
+     * Rotates main photo
+     * @param {*} about Angle by which it will be rotated (+ means CCW)
+     */
+    this.rotatePhoto = function(about) {
+        this.frame.transformer.rotate(this.frame.transformer.curAngle + about);
+    }
 
     /**
      * Adds click event listener to buttons  in proper form (with a specific arguments)
@@ -980,8 +976,8 @@ function Controls(settings, frame, lightbox) {
      this.addButtonEvents =  function() {
         this.frame.next.addEventListener("click", () => {this.lb.next();});
         this.frame.prev.addEventListener("click", () => {this.lb.prev();});
-        this.frame.link.addEventListener("click", () => {
-            if(this.lb.slideshowInterval) {
+        this.frame.cross.addEventListener("click", () => {
+            if(this.lb.presentationInterval) {
                 this.lb.stop();
             }
             else {
@@ -993,31 +989,25 @@ function Controls(settings, frame, lightbox) {
             this.frame.menu.reset.addEventListener("click", () => {
                 this.frame.transformer.transformToDefault();
             });
-            this.frame.menu.save.box.label.addEventListener("click", () => {
-                if(this.frame.menu.save.box.checkbox.checked) {
-                    this.frame.menu.save.box.checkbox.checked = false;
-                }
-                else {
-                    this.frame.menu.save.box.checkbox.checked = true;
-                }
-            });
+
             this.frame.menu.zoom.zoomIn.addEventListener("click", () => {
-                this.frame.transformer.scale(this.frame.transformer.curScale + 0.2);
+                this.zoomPhoto(this.basicZoomStep);
             });
             this.frame.menu.zoom.zoomOut.addEventListener("click", () => {
-                this.frame.transformer.scale(this.frame.transformer.curScale - 0.2);
+                this.zoomPhoto(-this.basicZoomStep);
             });
+
             this.frame.menu.rotation.rotRight.addEventListener("click", () => {
-                this.frame.transformer.rotate(this.frame.transformer.curAngle + 90);
+                this.rotatePhoto(this.rotStep);
             });
             this.frame.menu.rotation.rotLeft.addEventListener("click", () => {
-                this.frame.transformer.rotate(this.frame.transformer.curAngle - 90);
+                this.rotatePhoto(-this.rotStep);
             });
         }
 
-        if(this.settings.slideshow) {
+        if(this.settings.presentation) {
             this.frame.menu.pres.play.addEventListener("click", () => {
-                if(this.lb.slideshowInterval == null) {
+                if(this.lb.presentationInterval == null) {
                     this.lb.run();
                 }
                 else {
@@ -1042,7 +1032,7 @@ function Controls(settings, frame, lightbox) {
                 this.menuClose(e.target);
             }
             else {
-                if(this.lb.slideshowInterval) {
+                if(this.lb.presentationInterval) {
                     this.lb.stop();
                 }
                 else {
@@ -1165,7 +1155,7 @@ function Controls(settings, frame, lightbox) {
         switch(key.code) {
             case "ArrowLeft":
                 this.frame.lightenButton(this.frame.prev);
-                if(this.settings.slideshow && this.lb.slideshowInterval) {
+                if(this.lb.presentationInterval) {
                     this.lb.reset();
                 }
                 this.lb.prev();
@@ -1173,31 +1163,28 @@ function Controls(settings, frame, lightbox) {
                 break;
             case "ArrowRight":
                 this.frame.lightenButton(this.frame.next);
-                if(this.settings.slideshow && this.lb.slideshowInterval) {
+                if(this.lb.presentationInterval) {
                     this.lb.reset();
                 }
                 this.lb.next();
                 break;
 
             case "Escape":
-                if(this.lb.slideshowInterval) {
+                this.frame.lightenButton(this.frame.cross);
+                if(this.lb.presentationInterval) {
                     this.lb.stop();
-                    this.frame.lightenButton(this.frame.link);
                 }
                 else {
                     this.frame.hideFrame();
-                    this.frame.lightenButton(this.frame.cross);
                 }
                 break;
 
             case "Space":
-                if(this.settings.slideshow) {
-                    if(this.lb.slideshowInterval) {
-                        this.lb.stop();
-                    }
-                    else {
-                        this.lb.run();
-                    }
+                if(this.lb.presentationInterval) {
+                    this.lb.stop();
+                }
+                else {
+                    this.lb.run();
                 }
                 break;
         }
@@ -1208,20 +1195,22 @@ function Controls(settings, frame, lightbox) {
      */
     this.transformKeys = function(key) {
         switch(key.code) {
+
             case "KeyL":
-                this.frame.transformer.rotate(this.frame.transformer.curAngle + 90);
+                this.rotatePhoto(this.rotStep);
                 this.keyboardBlocked = false;
                 break;
             case "KeyR":
-                this.frame.transformer.rotate(this.frame.transformer.curAngle - 90);
+                this.rotatePhoto(-this.rotStep);
                 this.keyboardBlocked = false;
                 break;
+
             case "NumpadAdd":
-                this.frame.transformer.scale(this.frame.transformer.curScale + 0.1);
+                this.zoomPhoto(this.basicZoomStep, sensitivity = 0.5);
                 this.keyboardBlocked = false;
                 break;
             case "NumpadSubtract":
-                this.frame.transformer.scale(this.frame.transformer.curScale - 0.1);
+                this.zoomPhoto(-this.basicZoomStep, sensitivity = 0.5);
                 this.keyboardBlocked = false;
                 break;
         }
@@ -1229,11 +1218,10 @@ function Controls(settings, frame, lightbox) {
 
 
     /**
-     * Adds mouse events to control photo transformation
+     * Adds mouse (and touch) events to control photo transformation
      */
     this.bindMouse = function() {
-
-        if(!this.settings.transformations) {
+        if(!this.settings.transformations) { //Mouse events are disabled in settings file
             return;
         }
 
@@ -1242,61 +1230,249 @@ function Controls(settings, frame, lightbox) {
          */
         this.frame.grandParent.addEventListener("wheel", (e) => {
             e.preventDefault();
-            this.frame.transformer.scale(this.frame.transformer.curScale - e.deltaY*0.01);
+            this.zoomPhoto(-e.deltaY, sensitivity = 0.01);
+        });
+
+
+        /**
+         * Activates grabbing of photo
+         */
+        this.frame.photo.addEventListener("mousedown", (e) => {
+            this.mouseDownAction(e);
         });
 
         /**
-         * activates grabbing of photo
+         * For cell phones
          */
-        this.frame.photo.addEventListener("mousedown", (e) => {
-            e.preventDefault();
-
-            this.moveActivated = true;
-
-            let yPerc = e.clientY/this.frame.grandParent.clientHeight;
-            let xPerc = e.clientX/this.frame.grandParent.clientWidth;
-            this.transStart[0] = Math.round(xPerc*10000)/100;
-            this.transStart[1] = Math.round(yPerc*10000)/100;
-
-            $(this.frame.photo).css("cursor", "grabbing");
-            $(this.frame.photo).css("transition", "none");
+        this.frame.photo.addEventListener("touchstart", (e) => {
+            let nFingers = this.getNumberOfFingers(e);
+            if(nFingers == 1) {
+                this.mouseDownAction(e);
+            }
+            else if(nFingers == 2) {
+                this.startPinchZoom(e);
+            }
         });
 
         /**
          * Deactivates grabbing of photo
          */
         this.frame.grandParent.addEventListener("mouseup", () => {
-            this.moveActivated = false;
+            this.mouseUpAction();
+        });
 
-            this.frame.transformer.centerSmallImage();
-
-            $(this.frame.photo).css("cursor", "");
-            $(this.frame.photo).css("transition", "");
+        this.frame.grandParent.addEventListener("touchend", (e) => {
+            if(this.getNumberOfFingers(e) == 1) {
+                this.mouseUpAction();
+            }
         });
 
         /**
          * Grabs photo
          */
         this.frame.grandParent.addEventListener("mousemove", (e) => {
-            if(this.moveActivated) {
-                let lbWidth = this.frame.grandParent.clientWidth;
-                let lbHeight = this.frame.grandParent.clientHeight;
+            this.mouseMoveAction(e);
+        });
 
-                let curPosXPerc = Math.round((e.clientX/lbWidth)*10000)/100;
-                let curPosYPerc = Math.round((e.clientY/lbHeight)*10000)/100;
-
-                let newPosX = this.frame.transformer.curPos[0] + curPosXPerc - this.transStart[0];
-                let newPosY = this.frame.transformer.curPos[1] + curPosYPerc - this.transStart[1];
-
-
-                if(this.isInsideWindow(newPosX*lbWidth/100, newPosY*lbHeight/100)) {
-                    this.frame.transformer.translate(newPosX, newPosY);
-                    this.transStart[0] = curPosXPerc;
-                    this.transStart[1] = curPosYPerc;
-                }
+        this.frame.grandParent.addEventListener("touchmove", (e) => {
+            let nFingers = this.getNumberOfFingers(e);
+            if(nFingers == 1) {
+                this.mouseMoveAction(e);
+            }
+            else if(nFingers == 2) {
+                this.pinchZoom(e);
             }
         });
     }
+
+    /**
+     * Initializes pinch gestures
+     * @param {*} e Event object (contaning info about touches)
+     */
+    this.startPinchZoom = function(e) {
+        e.preventDefault();
+
+        let event = this.getTouchEvent(e);
+
+        this.lastTouchPosition[0] = [event.touches[0].clientX, event.touches[0].clientY];
+        this.lastTouchPosition[1] = [event.touches[1].clientX, event.touches[1].clientY];
+    }
+
+
+    /**
+     * Performs zoom in/out of photo by "pinch getures" (two fingers moving away or getting closer on the screen)
+     * @param {*} e Event object (contaning info about touches)
+     */
+    this.pinchZoom = function(e) {
+        e.preventDefault();
+
+        let event = this.getTouchEvent(e);
+
+        let curPosTouchOne = [event.touches[0].clientX, event.touches[0].clientY];
+        let curPosTouchTwo = [event.touches[1].clientX, event.touches[1].clientY];
+
+        let currentDistance = this.getDistance(curPosTouchOne, curPosTouchTwo);
+        let lastDistance = this.getDistance(this.lastTouchPosition[0], this.lastTouchPosition[1]);
+
+        if(currentDistance < lastDistance || currentDistance > lastDistance) {
+            this.zoomPhoto(currentDistance - lastDistance, sensitivity = 0.005);
+        }
+
+        this.lastTouchPosition[0] = curPosTouchOne;
+        this.lastTouchPosition[1] = curPosTouchTwo;
+    }
+
+
+    /**
+     * Can be used for getting event with details about touches
+     * @param {*} e Event object that fired touch event
+     * @returns Event object that contains touches array
+     */
+    this.getTouchEvent = function(e) {
+        let event = (e.originalEvent === undefined) ? e : e.originalEvent;
+
+        return event;
+    }
+
+    /**
+     * Returns number of fingers fired an touch event
+     * @param {*} e Event object that fired an event
+     * @returns Number of used fingers or zero if it is not a touch event
+     */
+    this.getNumberOfFingers = function(e) {
+        if(e.type == "touchstart" || e.type == "touchend" || 
+           e.type == "touchmove" || e.type == "touchcancel") {
+            let event = this.getTouchEvent(e);
+
+            return event.touches.length;
+        }
+
+        return 0;
+    }
+
+    /**
+     * Response fired when mouse clicked down - activates image moving
+     * @param {*} e event object
+     */
+    this.mouseDownAction = function(e) {
+        e.preventDefault();
+
+        this.moveActivated = true;
+
+        let yPerc = this.getYPosPerc(e);
+        let xPerc = this.getXPosPerc(e);
+        this.transStart[0] = xPerc;
+        this.transStart[1] = yPerc;
+
+        $(this.frame.photo).css("cursor", "grabbing");
+        $(this.frame.photo).css("transition", "none");
+    }
+
+    /**
+     *  Response fired when mouse button is realease - deactivates image moves
+     */
+    this.mouseUpAction = function() {
+        this.moveActivated = false;
+
+        this.frame.transformer.centerSmallImage();
+
+        $(this.frame.photo).css("cursor", "");
+        $(this.frame.photo).css("transition", "");
+    }
+
+    /**
+     * Response for clicked mouse moves - moves with photo
+     * @param {*} e Event fired
+     */
+    this.mouseMoveAction = function(e) {
+        if(this.moveActivated) {
+            let lbWidth = this.frame.grandParent.clientWidth;
+            let lbHeight = this.frame.grandParent.clientHeight;
+
+            let curPosXPerc = this.getXPosPerc(e);
+            let curPosYPerc = this.getYPosPerc(e);
+
+            let newPosX = this.frame.transformer.curPos[0] + curPosXPerc - this.transStart[0];
+            let newPosY = this.frame.transformer.curPos[1] + curPosYPerc - this.transStart[1];
+
+            if(this.isInsideWindow(newPosX*lbWidth/100, newPosY*lbHeight/100)) {
+                this.frame.transformer.translate(newPosX, newPosY);
+                this.transStart[0] = curPosXPerc;
+                this.transStart[1] = curPosYPerc;
+            }
+        }
+    }
+
+    /**
+     * @param {*} pt1 Array, that represents first point (first element is x coordinate second is y coordinate)
+     * @param {*} pt2 Array, that represents second point
+     * @returns Distance between two points
+     */
+     this.getDistance = function(pt1, pt2) {
+        return Math.sqrt((pt1[0] - pt2[0])**2 + (pt1[1] - pt2[1])**2);
+    }
+
+
+    /**
+     * Determines X position of finger/mouse on screen in percent of window width (it can be easily transformed to absolute value - multiply it by width)
+     * @param {*} e mouse or touch event
+     * @returns rounded position of cursor/finger in perc. of window width OR it returns zero if e is not mouse/touch event
+     */
+    this.getXPosPerc = function(e) {
+        let lbWidth = this.frame.grandParent.clientWidth;
+        let pos;
+
+        if(e.type == "mousedown" || e.type == "mouseup" || 
+           e.type == "mousemove") {
+
+            pos = e.clientX;
+        }
+        else if(e.type == "touchstart" || e.type == "touchend" || 
+                e.type == "touchmove" || e.type == "touchcancel") {
+
+            let event = this.getTouchEvent(e);
+
+            let touch = event.touches[0] || event.changedTouches[0];
+
+            pos = touch.pageX;
+        }
+        else {
+            return 0.0;
+        }
+
+        return Math.round((pos/lbWidth)*10000)/100; //Rounding
+    }
+
+    /**
+     * Determines Y position of finger/mouse on screen in percent of window height (it can be easily transformed to absolute value - multiply it by height)
+     * @param {*} e mouse or touch event
+     * @returns rounded position of cursor/finger in perc. of window height OR it returns zero if e is not mouse/touch event
+     */
+    this.getYPosPerc = function(e) {
+        let lbHeight = this.frame.grandParent.clientHeight;
+        let pos;
+
+        if(e.type == "mousedown" || e.type == "mouseup" || 
+           e.type == "mousemove") {
+
+            pos = e.clientY;
+        }
+        else if(e.type == "touchstart" || e.type == "touchend" || 
+                e.type == "touchmove" || e.type == "touchcancel") {
+
+            let event = this.getTouchEvent(e);
+
+            let touch = event.touches[0] || event.changedTouches[0];
+
+            pos = touch.pageY;
+        }
+        else {
+            return 0.0;
+        }
+
+        return Math.round((pos/lbHeight)*10000)/100; //Rounding
+    }
+
 
     /**
      * Checks whether is photo on position posX, posY still inside the window
